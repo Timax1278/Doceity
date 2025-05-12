@@ -1,0 +1,194 @@
+﻿@* Usa il ViewModel definito nel controller per passare utente e ruoli *@
+@model List<Doceity.Controllers.AdminController.UserViewModel>
+@using Doceity.Constants
+
+@{
+    ViewData["Title"] = "Gestione Utenti";
+    // Assicurati che questo percorso punti al tuo layout principale corretto!
+    Layout = "/Pages/Shared/_Layout.cshtml";
+    var currentFilter = ViewData["CurrentFilter"] as string; // Recupera filtro ricerca per pre-popolare
+    var currentRoleFilter = ViewData["RoleFilter"] as string; // Recupera filtro ruolo per pre-popolare
+    var rolesList = ViewBag.Roles as List<string> ?? new List<string>(); // Recupera lista ruoli per dropdown
+    var currentAdminId = ViewData["CurrentAdminId"] as string; // ID Admin corrente per disabilitare auto-cancellazione
+}
+
+<div class="container mt-4">
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p class="lead mb-4">Visualizza, cerca e gestisci gli utenti registrati sulla piattaforma.</p>
+
+    @* Blocco per mostrare messaggi TempData (Successo, Errore, Warning) *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i> @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* Form per Filtri con ID per JavaScript *@
+    <form id="filterForm" asp-controller="Admin" asp-action="UserManagement" method="get" class="mb-4 p-3 border rounded bg-light shadow-sm">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6 col-lg-5">
+                <label for="searchString" class="form-label">Cerca Nome/Cognome/Email:</label>
+                <input type="search" id="searchString" name="searchString" value="@currentFilter" class="form-control form-control-sm" placeholder="Digita per cercare..." />
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label for="roleFilter" class="form-label">Filtra per Ruolo:</label>
+                <select id="roleFilter" name="roleFilter" class="form-select form-select-sm">
+                    <option value="">-- Tutti i Ruoli --</option>
+                    @* Popola dropdown con ruoli esistenti, selezionando quello corrente *@
+                    @foreach (var role in rolesList.OrderBy(r => r))
+                    {
+                        <option value="@role" selected="@(role == currentRoleFilter)">@role</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2 mt-2 mt-md-0">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-filter"></i> Filtra</button>
+            </div>
+            <div class="col-md-6 col-lg-2 mt-2 mt-md-0">
+                @* Pulsante Reset (type="button" per non inviare, gestito da JS) *@
+                <button type="button" id="resetFilterBtn" class="btn btn-secondary btn-sm w-100"><i class="bi bi-x-lg"></i> Reset</button>
+            </div>
+        </div>
+    </form>
+
+    @* Tabella Utenti *@
+    <div class="card shadow-sm">
+        <div class="card-header fw-bold">
+            Risultati (@Model.Count utenti trovati)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Nome</th>
+                            <th>Cognome</th>
+                            <th>Email</th>
+                            <th>Ruoli</th>
+                            <th class="text-center">Email Conf.</th>
+                            <th class="text-center">Esperto Appr.</th>
+                            <th>Data Reg.</th>
+                            <th class="text-center pe-3">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center p-4 text-muted"><i>Nessun utente trovato con i criteri specificati.</i></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model) // Itera sui ViewModel passati dal controller
+                            {
+                                <tr>
+                                    <td class="ps-3">@Html.DisplayFor(modelItem => item.User.FirstName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.User.LastName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.User.Email)</td>
+                                    <td>
+                                        @* Mostra i ruoli come badge colorati *@
+                                        @foreach (var role in item.Roles.OrderBy(r => r))
+                                        {
+                                            string badgeClass = role == Roles.Admin ? "bg-danger" : (role == Roles.Expert ? "bg-info text-dark" : "bg-secondary");
+                                            <span class="badge @badgeClass me-1">@role</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @* Icona per email confermata/non confermata *@
+                                        @if (item.User.EmailConfirmed)
+                                        {
+                                            <i class="bi bi-check-circle-fill text-success" title="Sì"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-x-circle-fill text-danger" title="No"></i>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @* Stato approvazione esperto *@
+                                        @if (item.Roles.Contains(Roles.Expert))
+                                        {
+                                            @if (item.User.IsApprovedExpert)
+                                            {
+                                                <span class="badge bg-success">Sì</span>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Admin" asp-action="ApproveExperts" title="Vai ad Approvazione"><span class="badge bg-warning text-dark">In Attesa</span></a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        } @* Non applicabile per non esperti *@
+                                    </td>
+                                    @* Data registrazione (usa ToLocalTime per fuso orario server) *@
+                                    <td>@(item.User.RegistrationDate != default ? item.User.RegistrationDate.ToLocalTime().ToString("dd/MM/yyyy") : "N/D")</td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1 pe-3">
+                                            @* Link Modifica Ruoli (Futuro) *@
+                                            @* <a asp-action="EditUserRoles" asp-route-userId="@item.User.Id" class="btn btn-outline-secondary btn-sm" title="Modifica Ruoli"><i class="bi bi-person-badge"></i></a> *@
+
+                                            @* Bottone Elimina con controllo Admin Corrente e action esplicita *@
+                                            <form action="/Admin/DeleteUser" method="post" class="d-inline" onsubmit="return confirm('ATTENZIONE!\nSei sicuro di voler ELIMINARE DEFINITIVAMENTE l\'utente @(item.User.FirstName.Replace("'", "\\'")) @(item.User.LastName.Replace("'", "\\'"))?\nQuesta operazione non può essere annullata.')">
+                                                <input type="hidden" name="userId" value="@item.User.Id" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm @(item.User.Id == currentAdminId ? "disabled" : "")"
+                                                        title="Elimina Utente" @(item.User.Id == currentAdminId ? "disabled" : "")>
+                                                    <i class="bi bi-trash3-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div> @* Fine table-responsive *@
+        </div> @* Fine card-body *@
+    </div> @* Fine card *@
+
+</div> @* Fine container *@
+
+@* Sezione Scripts per il reset del form *@
+@section Scripts {
+    <script>
+        // Assicura che questo codice venga eseguito dopo il caricamento di jQuery
+        $(document).ready(function () {
+            $('#resetFilterBtn').on('click', function () {
+                // Seleziona gli elementi del form
+                var searchInput = $('#searchString');
+                var roleSelect = $('#roleFilter');
+                var filterForm = $('#filterForm');
+
+                // Svuota i campi
+                searchInput.val('');
+                roleSelect.val(''); // Imposta il valore a "" (opzione "-- Tutti i Ruoli --")
+
+                // Invia il form con i campi resettati
+                filterForm.submit();
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    } // Necessario se hai validazione client-side nei filtri (non in questo caso)
+}

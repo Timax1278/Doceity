@@ -1,0 +1,395 @@
+﻿/* Areas/Identity/Pages/Account/Login.cshtml.css */
+/* OR Pages/Account/Login.cshtml.css */
+
+/* Login Page Specific Styles */
+
+/* Apply base styles relative to the page root */
+:deep(.login-container) { /* Use :deep to style elements potentially outside the direct scope if needed, like a wrapper added in cshtml */
+    position: relative;
+    /* Adjust min-height based on your ACTUAL header/footer, or use viewport units carefully */
+    /* Example: offset by approximate header height if header is present */
+    /* min-height: calc(100vh - 80px);  */
+    /* Or, if header/footer are outside RenderBody, just ensure enough space */
+    min-height: 85vh; /* Simpler approach: ensure it takes most of viewport */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem; /* Add some horizontal padding */
+    width: 100%; /* Ensure it spans width */
+}
+
+/* Background Effects */
+:deep(.login-container::before) {
+    content: '';
+    position: absolute;
+    top: -15%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(232, 58, 203, 0.15), transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0; /* Behind content, but above body background */
+}
+
+:deep(.login-container::after) {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(58, 200, 232, 0.15), transparent 70%);
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0; /* Behind content */
+}
+
+/* Wrapper for the content within the container */
+.login-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px; /* Max width for the login forms area */
+    margin: 0 auto;
+    position: relative; /* Ensure content is above pseudo-elements */
+    z-index: 1;
+}
+
+
+    /* Page title within the wrapper */
+    .login-wrapper h1 {
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-align: center;
+        margin-bottom: 3rem; /* Increased margin */
+        color: #fff; /* Fallback color */
+        background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+        display: inline-block; /* Allows underline to size correctly */
+        padding-bottom: 0.75rem; /* Space for underline */
+    }
+
+        .login-wrapper h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px; /* Wider underline */
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8));
+            border-radius: 1.5px;
+        }
+
+    /* Style the main row holding the login forms */
+    .login-wrapper .row {
+        width: 100%;
+        justify-content: center; /* Center columns on larger screens if needed */
+        gap: 2rem; /* Add space between columns */
+    }
+
+/* Login form card styling (section) */
+section {
+    background: var(--card-bg, rgba(27, 10, 50, 0.6)); /* Use theme variable */
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2.5rem; /* Increased padding */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: var(--text-light, #ffffff); /* Use theme variable */
+    height: 100%; /* Make sections in the same row equal height */
+}
+
+    section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Section headers (h2, h3) */
+    section h2, section h3 {
+        color: var(--text-light, #ffffff);
+        margin-bottom: 2rem; /* Increased margin */
+        position: relative;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+        padding-bottom: 0.5rem; /* Space for underline */
+        text-align: center; /* Center section headers */
+    }
+
+        section h2::after, section h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px; /* Position underline closer */
+            left: 50%; /* Center underline */
+            transform: translateX(-50%);
+            width: 70px; /* Wider underline */
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8));
+            border-radius: 1px;
+        }
+
+hr {
+    border: none; /* Remove default border */
+    height: 1px; /* Define height */
+    background-color: rgba(255, 255, 255, 0.1); /* Use subtle color */
+    opacity: 1; /* Override bootstrap opacity if needed */
+    margin: 2rem 0; /* Increased margin */
+}
+
+/* Form inputs */
+.form-floating {
+    margin-bottom: 1.5rem;
+    position: relative; /* Needed for label positioning */
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-light, #ffffff);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    padding-top: 1.625rem; /* Ensure space for floating label */
+    padding-bottom: 0.625rem;
+}
+/* Ensure height matches Bootstrap's expectation */
+.form-floating > .form-control {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue, #3ac8e8); /* Use theme variable */
+    box-shadow: 0 0 0 0.25rem rgba(58, 200, 232, 0.25);
+    color: var(--text-light, #ffffff);
+}
+
+/* Floating label adjustments */
+.form-floating > label {
+    color: rgba(255, 255, 255, 0.6);
+    padding: 1rem 0.75rem; /* Match Bootstrap */
+    transition: opacity .15s ease-in-out, transform .15s ease-in-out;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--accent-blue, #3ac8e8); /* Focused/filled label color */
+    opacity: 1;
+    transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+}
+/* Adjust label position when input has value but isn't focused */
+.form-floating > .form-control:-webkit-autofill ~ label {
+    transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+    opacity: 1;
+    color: var(--accent-blue, #3ac8e8);
+}
+
+
+/* Checkbox styling */
+.form-check {
+    padding-left: 2em; /* More space for custom checkbox */
+}
+
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 0.3em; /* Align better with label */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+    .form-check-input:checked {
+        background-color: var(--accent-pink, #e83acb);
+        border-color: var(--accent-pink, #e83acb);
+    }
+
+    .form-check-input:focus {
+        border-color: var(--accent-blue, #3ac8e8);
+        box-shadow: 0 0 0 0.25rem rgba(58, 200, 232, 0.25);
+    }
+
+.form-check label.form-label { /* Target the label within form-check */
+    color: rgba(255, 255, 255, 0.8);
+    margin-left: 0.5em;
+    cursor: pointer;
+}
+
+/* Button styling (Primary Login / Submit) */
+#login-submit.btn-primary.btn-lg { /* More specific selector */
+    background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8));
+    border: none;
+    border-radius: 30px;
+    padding: 0.85rem 2rem; /* Slightly larger padding */
+    font-weight: 700; /* Bolder */
+    text-transform: uppercase;
+    letter-spacing: 1.2px; /* More spacing */
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(232, 58, 203, 0.3);
+    position: relative; /* For potential pseudo-elements */
+    overflow: hidden; /* For potential effects */
+    width: 100%; /* Ensure it takes full width */
+    margin-top: 1rem; /* Add space above button */
+    color: var(--text-light, #ffffff);
+}
+
+    #login-submit.btn-primary.btn-lg:hover {
+        transform: translateY(-3px) scale(1.02); /* Add slight scale */
+        box-shadow: 0 8px 25px rgba(232, 58, 203, 0.4);
+        background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8)); /* Keep gradient */
+        color: var(--text-light, #ffffff);
+    }
+
+    #login-submit.btn-primary.btn-lg:active {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(232, 58, 203, 0.4);
+    }
+
+/* Links styling (Forgot password, Register, etc.) */
+section p a { /* Target links within section paragraphs */
+    color: var(--accent-blue, #3ac8e8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 0.95em;
+}
+
+    section p a:hover {
+        color: var(--accent-pink, #e83acb);
+        text-decoration: none; /* Prevent default underline */
+    }
+
+    section p a::after {
+        content: '';
+        position: absolute;
+        bottom: -3px; /* Position underline slightly below */
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: linear-gradient(90deg, var(--accent-pink, #e83acb), var(--accent-blue, #3ac8e8));
+        transition: width 0.3s ease;
+    }
+
+    section p a:hover::after {
+        width: 100%;
+    }
+
+/* Style paragraphs containing links */
+section div > p {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+/* Error messages */
+.text-danger {
+    color: #ff8fa3 !important; /* Brighter pink/red for dark theme */
+    font-size: 0.85em;
+    display: block; /* Ensure it takes space */
+    margin-top: 0.25rem;
+}
+/* Style validation summary */
+.validation-summary-errors {
+    color: #ff8fa3 !important;
+    background-color: rgba(255, 107, 157, 0.1);
+    border: 1px solid rgba(255, 107, 157, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+    .validation-summary-errors ul {
+        padding-left: 1rem;
+        margin-bottom: 0;
+    }
+
+
+/* External login buttons */
+#external-account .btn {
+    background: rgba(255, 255, 255, 0.1); /* Subtle background */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary, #e0e0e0);
+    margin-right: 0.5rem; /* Reduced margin */
+    margin-bottom: 0.75rem; /* Reduced margin */
+    border-radius: 30px;
+    padding: 0.6rem 1.5rem; /* Adjusted padding */
+    transition: all 0.3s ease;
+    text-transform: none; /* Allow provider names as is */
+    font-weight: 500;
+}
+
+    #external-account .btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--accent-blue, #3ac8e8);
+        color: var(--text-light, #ffffff);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+/* Paragraph containing external buttons */
+#external-account p {
+    text-align: center; /* Center buttons */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 991px) { /* Adjust breakpoint to match Bootstrap's lg */
+    .login-wrapper .row {
+        flex-direction: column;
+        align-items: center; /* Center columns vertically */
+        gap: 2rem;
+    }
+
+    .col-md-4, .col-md-6 { /* These classes might not be accurate with flex-direction column */
+        width: 100%;
+        max-width: 500px; /* Limit width of forms on smaller screens */
+    }
+
+    section {
+        padding: 2rem; /* Slightly reduce padding */
+    }
+}
+
+@media (max-width: 768px) {
+    .login-wrapper h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    :deep(.login-container) {
+        padding: 2rem 1rem; /* Reduce padding */
+        min-height: 90vh;
+    }
+
+    section h2, section h3 {
+        font-size: 1.3rem;
+    }
+}
+
+/* Remove float particle styles unless implemented with JS */
+/*
+@keyframes float-particle { ... }
+.floating-particle { ... }
+*/
+
+/* Adjust column widths (using standard Bootstrap classes is usually preferred) */
+/* Keep if specific layout is desired, otherwise rely on BS grid */
+@media (min-width: 992px) {
+    .login-wrapper .col-lg-5 { /* Example using BS classes for more standard grid */
+        flex: 0 0 auto;
+        width: calc(50% - 1rem); /* Adjust width considering gap */
+    }
+
+    .login-wrapper .col-lg-6 {
+        flex: 0 0 auto;
+        width: calc(50% - 1rem); /* Adjust width considering gap */
+    }
+    /* Remove offset class styling if not using offset classes in HTML */
+    /* .col-md-offset-2 { margin-left: 0; } */
+}

@@ -1,0 +1,139 @@
+﻿@* File: Views/ExpertDashboard/Index.cshtml *@
+@{
+    ViewData["Title"] = "Il Mio Calendario Attività";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso del tuo layout principale sia corretto
+}
+
+@*
+    Inclusione dei fogli di stile (CSS) di FullCalendar e Bootstrap Icons.
+    Usiamo @@ per fare l'escape del simbolo @ nei nomi dei pacchetti con scope.
+*@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@@fullcalendar/core@6.1.15/main.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@@fullcalendar/daygrid@6.1.15/main.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@@fullcalendar/timegrid@6.1.15/main.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@@fullcalendar/list@6.1.15/main.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@@fullcalendar/bootstrap5@6.1.15/main.min.css" rel="stylesheet" />
+
+<div class="container mt-4">
+    <h1>@ViewData["Title"]</h1>
+    <p>Visualizza le tue disponibilità, consulenze programmate e corsi.</p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div id="calendar-container" class="mt-4 shadow-sm p-3 mb-5 bg-body rounded">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+@section Scripts {
+    @*
+        Inclusione dei file JavaScript di FullCalendar.
+        Usiamo @@ per fare l'escape del simbolo @ nei nomi dei pacchetti con scope.
+    *@
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/core@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/interaction@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/timegrid@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/list@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/bootstrap5@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@fullcalendar/core@6.1.15/locales/it.global.min.js"></script> @* Locale Italiano *@
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            if (calendarEl) {
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    themeSystem: 'bootstrap5',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    },
+                    buttonIcons: {
+                        prev: 'bi-chevron-left',
+                        next: 'bi-chevron-right',
+                    },
+                    initialView: 'timeGridWeek',
+                    locale: 'it',
+                    navLinks: true,
+                    editable: false,
+                    selectable: false,
+                    dayMaxEvents: true,
+                    weekends: true,
+                    nowIndicator: true,
+                    slotMinTime: "07:00:00",
+                    slotMaxTime: "22:00:00",
+                    handleWindowResize: true,
+                    height: 'auto',
+
+                    events: {
+                        url: '@Url.Action("GetCalendarEvents", "ExpertDashboard")',
+                        method: 'GET',
+                        failure: function(error) {
+                            console.error('Errore nel caricamento degli eventi del calendario:', error.xhr ? error.xhr.responseText : error);
+                            var calendarContainer = document.getElementById('calendar-container');
+                            if(calendarContainer){
+                                var errorDiv = document.createElement('div');
+                                errorDiv.className = 'alert alert-danger mt-3';
+                                errorDiv.textContent = 'Si è verificato un errore nel caricare gli eventi del calendario. Riprova più tardi o contatta il supporto.';
+                                calendarContainer.insertBefore(errorDiv, calendarEl);
+                            }
+                        },
+                        cache: false
+                    },
+
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        meridiem: false,
+                        hour12: false
+                    },
+
+                    eventClick: function(info) {
+                        if (info.event.url) {
+                            window.location.href = info.event.url;
+                        } else {
+                            let details = `Evento: ${info.event.title}\n`;
+                            details += `Inizio: ${info.event.start ? info.event.start.toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : 'N/D'}\n`;
+                            if (info.event.end) {
+                                details += `Fine: ${info.event.end.toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}\n`;
+                            }
+                            alert(details);
+                        }
+                        // info.jsEvent.preventDefault(); // Solo se l'evento stesso è un link <a>
+                    },
+
+                    loading: function(isLoading) {
+                        calendarEl.style.opacity = isLoading ? '0.5' : '1';
+                    }
+                });
+
+                calendar.render();
+            } else {
+                console.error("L'elemento contenitore del calendario con ID 'calendar' non è stato trovato nel DOM.");
+            }
+        });
+    </script>
+}

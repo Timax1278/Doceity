@@ -1,0 +1,73 @@
+﻿@* File: Views/ExpertServices/Delete.cshtml *@
+@model Doceity.Models.ExpertService
+
+@{
+    ViewData["Title"] = "Delete Service";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che questo percorso sia corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h3 class="text-danger">Are you sure you want to delete this service?</h3>
+<p class="text-danger">This action cannot be undone.</p>
+
+@* Mostra eventuali messaggi di errore dal controller *@
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    </div>
+}
+@if (!ViewData.ModelState.IsValid)
+{
+     <div class="alert alert-danger" role="alert">
+        Please fix the following errors:
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    </div>
+}
+
+<div>
+    <h4>Service Details</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-3">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class = "col-sm-9">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class = "col-sm-3">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class = "col-sm-9" style="white-space: pre-wrap;">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-3">
+            @Html.DisplayNameFor(model => model.EstimatedDurationMinutes)
+        </dt>
+        <dd class = "col-sm-9">
+            @Html.DisplayFor(model => model.EstimatedDurationMinutes) minutes
+        </dd>
+        <dt class = "col-sm-3">
+            @Html.DisplayNameFor(model => model.Price)
+        </dt>
+        <dd class = "col-sm-9">
+            @Html.DisplayFor(model => model.Price) €
+        </dd>
+        <dt class = "col-sm-3">
+            @Html.DisplayNameFor(model => model.IsEnabled)
+        </dt>
+        <dd class = "col-sm-9">
+             @(Model.IsEnabled ? "Active" : "Inactive") @* Usa espressione ternaria qui *@
+        </dd>
+    </dl>
+
+    @* Form che invia la POST all'azione DeleteConfirmed del controller *@
+    <form asp-action="Delete" method="post">
+         @Html.AntiForgeryToken() @* Protezione CSRF *@
+        <input type="hidden" asp-for="ExpertServiceId" /> @* Usa Tag Helper qui per coerenza *@
+        <button type="submit" class="btn btn-danger">Delete Permanently</button> |
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a> @* Link per tornare indietro *@
+    </form>
+</div>

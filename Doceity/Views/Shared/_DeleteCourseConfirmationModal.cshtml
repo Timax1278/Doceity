@@ -1,0 +1,26 @@
+﻿@* Questo è un modale Bootstrap generico per la conferma eliminazione *@
+@* Si aspetta che l'ID dell'elemento da eliminare sia passato tramite data attribute *@
+@* e che il form per l'eliminazione effettiva sia gestito separatamente (es. nella tabella Index) *@
+
+<div class="modal fade" id="deleteCourseConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i> Conferma Eliminazione Corso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Sei sicuro di voler eliminare definitivamente il corso "<strong id="courseNameToDelete"></strong>"?
+                <br>
+                <small class="text-danger">Questa azione non può essere annullata.</small>
+            </div>
+            <div class="modal-footer">
+                @* Questo form verrà sottomesso dal pulsante nella tabella Index *@
+                @* Il pulsante "Elimina" qui dentro invierà il form corretto esterno al modale *@
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                @* Il pulsante "Elimina Definitivamente" nel MODALE ora triggera l'invio del FORM SPECIFICO nella tabella *@
+                <button type="button" class="btn btn-danger" id="confirmDeleteCourseBtn"><i class="bi bi-trash3-fill me-1"></i> Elimina Definitivamente</button>
+            </div>
+        </div>
+    </div>
+</div>

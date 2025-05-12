@@ -1,0 +1,141 @@
+﻿@* File: Views/ConsultationRequests/Index.cshtml *@
+@using Doceity.Models
+@model IEnumerable<Doceity.Models.ConsultationRequest>
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Richieste di Consulenza Ricevute";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+    var currentFilter = ViewData["CurrentFilter"] as string ?? "";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var expertUserNameForVideo = currentUser?.UserName ?? "expert_not_found";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@* ... (Messaggi TempData e Form Filtro come prima) ... *@
+<form asp-action="Index" method="get" class="row g-3 align-items-center mb-3">
+    <div class="col-auto">
+        <label for="statusFilter" class="col-form-label">Filtra per Stato:</label>
+    </div>
+    <div class="col-auto">
+        <select name="statusFilter" id="statusFilter" class="form-select" asp-items="Html.GetEnumSelectList<ConsultationRequestStatus>()" onchange="this.form.submit()">
+            <option value="">Tutti gli Stati</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-secondary">Pulisci Filtro</a>
+    </div>
+</form>
+<script>
+    var filterDropdown = document.getElementById('statusFilter');
+    if (filterDropdown) { filterDropdown.value = '@Html.Raw(currentFilter)'; }
+</script>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Utente Richiedente</th>
+                <th>Data/Ora Proposta (UTC)</th>
+                <th>Servizio</th>
+                <th>Stato</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center">Nessuna richiesta trovata.</td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.RequestingUser?.FirstName @item.RequestingUser?.LastName <br /><small class="text-muted">@item.RequestingUser?.Email</small></td>
+                    <td>@item.ProposedDateTime.ToString("dd/MM/yy HH:mm")</td>
+                    <td>@(item.RequestedExpertService?.Title ?? "Generica")</td>
+                    <td>
+                        <span class="badge @GetStatusBadgeClass(item.Status)">
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Details" asp-route-id="@item.ConsultationRequestId" class="btn btn-info" title="Vedi Dettagli"><i class="bi bi-eye"></i> Dettagli</a>
+                            @if (item.Status == ConsultationRequestStatus.Pending)
+                            {
+                                <form asp-action="Accept" asp-route-id="@item.ConsultationRequestId" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success" title="Accetta"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#rejectModal-@item.ConsultationRequestId" title="Rifiuta">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            }
+                            else if (item.Status == ConsultationRequestStatus.Accepted)
+                            {
+                                @if (item.IsSessionJoinable && !string.IsNullOrEmpty(item.VideoRoomIdentifier))
+                                {
+                                    <a asp-controller="Video" asp-action="Room"
+                                       asp-route-roomName="@item.VideoRoomIdentifier"
+                                       asp-route-userName="@expertUserNameForVideo"
+                                       class="btn btn-danger" title="Entra Video">
+                                        <i class="bi bi-camera-video-fill"></i> Entra
+                                    </a>
+                                }
+                                // Pulsante Annulla per l'esperto
+                                <a asp-action="CancelByExpert" asp-route-id="@item.ConsultationRequestId" class="btn btn-outline-danger" title="Annulla Consulenza">
+                                    <i class="bi bi-calendar-x"></i> Annulla
+                                </a>
+                            }
+                        </div>
+
+                        @if (item.Status == ConsultationRequestStatus.Pending)
+                        {
+                            <!-- Modal di Rifiuto -->
+                            <div class="modal fade" id="rejectModal-@item.ConsultationRequestId" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form asp-action="Reject" asp-route-id="@item.ConsultationRequestId" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <div class="modal-header"><h5 class="modal-title">Rifiuta Richiesta</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="responseMessage-@item.ConsultationRequestId" class="form-label">Motivazione (Obbligatoria):</label>
+                                                    <textarea class="form-control" id="responseMessage-@item.ConsultationRequestId" name="responseMessage" rows="3" required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button><button type="submit" class="btn btn-danger">Conferma Rifiuto</button></div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(ConsultationRequestStatus status)
+    {
+        return status switch
+        {
+            ConsultationRequestStatus.Pending => "bg-warning text-dark",
+            ConsultationRequestStatus.Accepted => "bg-success",
+            ConsultationRequestStatus.Rejected => "bg-danger",
+            ConsultationRequestStatus.Cancelled => "bg-secondary",
+            _ => "bg-light text-dark",
+        };
+    }
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

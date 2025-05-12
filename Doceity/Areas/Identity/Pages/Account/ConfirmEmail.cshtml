@@ -1,0 +1,18 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Conferma Email";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@* Mostra il messaggio di stato impostato nel code-behind *@
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+@* Puoi aggiungere un link alla pagina di login *@
+@if (Model.StatusMessage != null && Model.StatusMessage.StartsWith("Grazie"))
+{
+    <p class="mt-3">
+        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Vai al Login</a>
+    </p>
+}

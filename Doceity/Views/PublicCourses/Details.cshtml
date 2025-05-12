@@ -1,0 +1,225 @@
+﻿@* File: Views/PublicCourses/Details.cshtml *@
+@model Doceity.Models.Course
+@using Microsoft.AspNetCore.Identity
+@using Doceity.Models // Per EnrollmentStatus e Course (per la proprietà IsJoinable)
+@using Doceity.Constants // Per Roles
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewData["Title"] = Model?.Title ?? "Dettaglio Corso";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso sia corretto
+
+    ApplicationUser currentUser = null;
+    bool isUserSignedIn = SignInManager.IsSignedIn(User);
+    bool isUserEnrolled = false;
+    bool canUserEnroll = false;
+    bool courseIsFull = false;
+    // bool courseHasStarted = Model != null && Model.StartDateTime <= DateTime.UtcNow; // Useremo Model.IsJoinable che è più preciso
+
+    if (isUserSignedIn && Model != null) // Verifica Model != null qui
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            isUserEnrolled = Model.Enrollments != null &&
+                             Model.Enrollments.Any(e => e.UserId == currentUser.Id && e.Status == EnrollmentStatus.Enrolled);
+
+            canUserEnroll = User.IsInRole(Roles.User) && !isUserEnrolled && Model.CreatorExpertId != currentUser.Id;
+
+            if (Model.MaxParticipants.HasValue && Model.Enrollments != null)
+            {
+                int currentEnrollmentCount = Model.Enrollments.Count(e => e.Status == EnrollmentStatus.Enrolled || e.Status == EnrollmentStatus.PendingPayment);
+                if (currentEnrollmentCount >= Model.MaxParticipants.Value)
+                {
+                    courseIsFull = true;
+                }
+            }
+        }
+    }
+}
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">Corso non trovato.</div>
+    <p><a asp-controller="PublicCourses" asp-action="Index" class="btn btn-secondary">Torna alla Lista Corsi</a></p>
+}
+else
+{
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="PublicCourses" asp-action="Index">Corsi</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning">@TempData["WarningMessage"]</div>
+                }
+
+                <h1 class="display-5">@Model.Title</h1>
+                <p class="lead">
+                    Tenuto da:
+                    <a asp-controller="FindExperts" asp-action="Details" asp-route-id="@Model.CreatorExpertId">
+                        @Model.CreatorExpert?.FirstName @Model.CreatorExpert?.LastName
+                    </a>
+                </p>
+                <hr>
+
+                <h4 class="mt-4">Descrizione del Corso</h4>
+                <p style="white-space: pre-wrap;">@Model.Description</p>
+
+                <h4 class="mt-4">Dettagli</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Data e Ora Inizio:</strong> @Model.StartDateTime.ToLocalTime().ToString("dddd, dd MMMM yyyy 'alle' HH:mm")
+                        (@Model.StartDateTime.ToString("HH:mm") UTC)
+                    </li>
+                    <li class="list-group-item"><strong>Durata:</strong> @Model.DurationMinutes minuti</li>
+                    <li class="list-group-item"><strong>Prezzo:</strong> @Model.Price.ToString("C")</li>
+                    @if (Model.MaxParticipants.HasValue)
+                    {
+                        <li class="list-group-item">
+                            <strong>Partecipanti Massimi:</strong> @Model.MaxParticipants.Value
+                            (@(Model.Enrollments?.Count(e => e.Status == EnrollmentStatus.Enrolled || e.Status == EnrollmentStatus.PendingPayment) ?? 0) iscritti)
+                        </li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.VideoMeetingInfo))
+                    {
+                        <li class="list-group-item">
+                            <strong>Informazioni Meeting Online:</strong>
+                            @if (Uri.TryCreate(Model.VideoMeetingInfo, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+                            {
+                                <a href="@Model.VideoMeetingInfo" target="_blank" rel="noopener noreferrer">Accedi al meeting</a>
+                            }
+                            else
+                            {
+                                @* Se VideoMeetingInfo è solo un ID stanza, non un URL completo *@
+                                <span>ID Stanza: @Model.VideoMeetingInfo</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <div class="card mt-4 mt-lg-0 sticky-top" style="top: 20px;">
+                    <div class="card-body">
+                        <h5 class="card-title">Pronto per Imparare?</h5>
+                        <p class="card-text">
+                            @if (Model.IsJoinable && isUserEnrolled)
+                            {
+                                @:La lezione è attiva!
+                            }
+                            else if (Model.IsJoinable && canUserEnroll && !courseIsFull)
+                            {
+                                @:La lezione è live! Iscriviti ed entra subito.
+                            }
+                            else if (isUserEnrolled && Model.StartDateTime > DateTime.UtcNow)
+                            {
+                                @:Sei iscritto. La lezione inizierà il @Model.StartDateTime.ToLocalTime().ToString("dd/MM") alle @Model.StartDateTime.ToLocalTime().ToString("HH:mm").
+                            }
+                            else
+                            {
+                                @:Iscriviti a questo corso per migliorare le tue competenze.
+                            }
+                        </p>
+
+                        @* --- LOGICA PULSANTE ISCRIZIONE / ENTRA LEZIONE --- *@
+                        @if (Model.IsJoinable) @* Il corso è nella finestra temporale per partecipare *@
+                        {
+                            if (isUserEnrolled && currentUser != null) // Utente loggato, iscritto, e il corso è joinable
+                            {
+                                <a asp-controller="Video" asp-action="Room"
+                                   asp-route-roomName="@(string.IsNullOrEmpty(Model.VideoMeetingInfo) ? $"corso_{Model.CourseId}" : Model.VideoMeetingInfo)"
+                                   asp-route-userName="@currentUser.UserName" @* O un altro identificativo univoco dell'utente *@
+                                   class="btn btn-danger btn-lg w-100">
+                                    @* Colore diverso per "LIVE" *@
+                                    <i class="bi bi-camera-video-fill"></i> Entra Lezione LIVE
+                                </a>
+                            }
+                            else if (canUserEnroll && !courseIsFull && currentUser != null) // Può ancora iscriversi E il corso è live
+                            {
+                                <form asp-controller="CourseEnrollment" asp-action="Enroll" asp-route-courseId="@Model.CourseId" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-warning btn-lg w-100">Iscriviti e Entra Subito!</button>
+                                </form>
+                            }
+                            else if (!isUserSignedIn) // Non loggato, ma il corso è live
+                            {
+                                <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-info btn-lg w-100">
+                                    Accedi per Partecipare
+                                </a>
+                            }
+                            else // Altri casi (es. corso pieno, admin/esperto)
+                            {
+                                <p class="alert alert-secondary text-center small">La lezione è in corso. Controlla le tue iscrizioni o lo stato del corso.</p>
+                            }
+                        }
+                        else if (Model.StartDateTime <= DateTime.UtcNow) // Corso iniziato/passato ma non più "joinable"
+                        {
+                            <p class="alert alert-warning text-center">Questo corso è terminato o non più accessibile.</p>
+                        }
+                        else if (isUserEnrolled) // Corso futuro, utente iscritto
+                        {
+                            <p class="alert alert-info text-center">Sei già iscritto! La lezione non è ancora iniziata.</p>
+                            <a asp-controller="CourseEnrollment" asp-action="MyEnrolledCourses" class="btn btn-outline-info w-100 mt-2">Vedi I Miei Corsi</a>
+                        }
+                        else if (courseIsFull) // Corso futuro, pieno
+                        {
+                            <p class="alert alert-warning text-center">Il corso ha raggiunto il numero massimo di partecipanti.</p>
+                        }
+                        else if (canUserEnroll) // Corso futuro, posti disponibili, utente può iscriversi
+                        {
+                            <form asp-controller="CourseEnrollment" asp-action="Enroll" asp-route-courseId="@Model.CourseId" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-lg w-100">Iscriviti Ora (@Model.Price.ToString("C"))</button>
+                            </form>
+                        }
+                        else if (isUserSignedIn && (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Expert) && Model.CreatorExpertId != currentUser?.Id))
+                        {
+                            <p class="alert alert-secondary text-center small">Puoi visualizzare i dettagli del corso.</p>
+                        }
+                        else if (isUserSignedIn && User.IsInRole(Roles.Expert) && Model.CreatorExpertId == currentUser?.Id)
+                        {
+                            <p class="alert alert-secondary text-center small">Questo è un tuo corso. Gestiscilo dalla tua area.</p>
+                        }
+                        else // Utente non loggato e corso futuro
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-success btn-lg w-100">
+                                Accedi per Iscriverti
+                            </a>
+                            <p class="text-muted small mt-2 text-center">Devi accedere come utente per poterti iscrivere.</p>
+                        }
+                        @* --- FINE LOGICA PULSANTE ISCRIZIONE / ENTRA LEZIONE --- *@
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Prezzo: @Model.Price.ToString("C")</strong></li>
+                        <li class="list-group-item"><i class="bi bi-calendar-event"></i> Inizio: @Model.StartDateTime.ToLocalTime().ToString("dd/MM/yy HH:mm")</li>
+                        <li class="list-group-item"><i class="bi bi-clock"></i> Durata: @Model.DurationMinutes min</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <a asp-controller="PublicCourses" asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Torna alla Lista Corsi</a>
+    </div>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,91 @@
+﻿@* File: Views/FindExperts/Details.cshtml *@
+@model Doceity.Models.ApplicationUser
+@{
+    // Titolo dinamico della pagina
+    ViewData["Title"] = "Dettaglio Esperto: " + (Model != null ? $"{Model.FirstName} {Model.LastName}" : "Esperto non trovato");
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso del layout sia corretto
+}
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">Esperto non trovato o non disponibile.</div>
+    <p><a asp-action="Index" class="btn btn-secondary">Torna alla Lista Esperti</a></p>
+}
+else
+{
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Profilo dell'Esperto</h4>
+            <dl class="row">
+                <dt class="col-sm-4">Nome Completo:</dt>
+                <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
+
+                <dt class="col-sm-4">Email (per contatto):</dt>
+                <dd class="col-sm-8">@Model.Email</dd> @* Considera la privacy dell'email *@
+
+                <dt class="col-sm-4">Membro dal:</dt>
+                <dd class="col-sm-8">@Model.RegistrationDate.ToString("dd MMMM yyyy")</dd>
+
+                @* Qui potresti aggiungere altre informazioni che hai nel modello ApplicationUser
+                   o che potresti aggiungere in futuro (es. biografia, specializzazioni, link a social) *@
+                @*
+                <dt class="col-sm-4">Biografia:</dt>
+                <dd class="col-sm-8" style="white-space: pre-wrap;">[Testo biografia dell'esperto]</dd>
+                *@
+            </dl>
+
+            @* Sezione per mostrare i servizi offerti dall'esperto *@
+            @* Questo richiede che il controller Details carichi e passi i servizi *@
+            @if (ViewData["ExpertServices"] is IEnumerable<Doceity.Models.ExpertService> services && services.Any())
+            {
+                <h4 class="mt-4">Servizi Offerti da @Model.FirstName</h4>
+                <div class="list-group mt-3">
+                    @foreach (var service in services)
+                    {
+                        // --- INIZIO BLOCCO SERVIZIO ---
+                        <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 shadow-sm">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">@service.Title</h5>
+                                <small class="text-success">@service.Price.ToString("C")</small> @* Rimosso </p> errato *@
+                            </div>
+                            <p class="mb-1">@service.Description</p>
+                            <small class="text-muted">Durata stimata: @service.EstimatedDurationMinutes minuti.</small>
+                            <div class="mt-2">
+                                <a asp-controller="ConsultationBooking" asp-action="CreateRequest"
+                                   asp-route-expertUserId="@Model.Id" asp-route-expertServiceId="@service.ExpertServiceId"
+                                   class="btn btn-sm btn-primary">
+                                    Richiedi questo Servizio
+                                </a>
+                            </div>
+                        </div> // --- FINE BLOCCO SERVIZIO --- CORREZIONE: Questo div chiude list-group-item
+                    }
+                </div> // Chiude list-group
+            }
+            else
+            {
+                 <p class="mt-3"><em>Questo esperto non ha ancora pubblicato servizi specifici. Puoi inviare una richiesta di consulenza generica.</em></p>
+            }
+        </div> @* Chiude col-md-8 *@
+
+        <div class="col-md-4">
+            @* Area laterale per call to action o altre info *@
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Richiedi Consulenza</h5>
+                    <p class="card-text">Vuoi una consulenza personalizzata con @Model.FirstName?</p>
+                    <a asp-controller="ConsultationBooking" asp-action="CreateRequest" asp-route-expertUserId="@Model.Id" class="btn btn-success w-100">
+                        Invia Richiesta di Consulenza
+                    </a>
+                </div>
+            </div>
+        </div> @* Chiude col-md-4 *@
+    </div> @* Chiude row *@
+
+    <hr />
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-outline-secondary">Torna alla Lista Esperti</a>
+    </div>
+}

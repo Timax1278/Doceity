@@ -1,0 +1,32 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager // Aggiungi UserManager
+@using Doceity.Constants // Aggiungi per Roles
+
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    var user = await UserManager.GetUserAsync(User); // Ottieni l'utente corrente
+    var isExpert = user != null && await UserManager.IsInRoleAsync(user, Roles.Expert); // Verifica se è esperto
+}
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profilo</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
+    @if (hasExternalLogins)
+    {
+        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
+    }
+    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
+
+    @* -------- AGGIUNGI QUESTO BLOCCO -------- *@
+    @if (isExpert)
+    {
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.ExpertProfileNavClass(ViewContext)" id="expert-profile"
+               asp-controller="ExpertProfile" asp-action="Manage">Profilo Esperto</a>
+        </li>
+        @* Aggiungeremo qui link futuri per Esperti (es. Disponibilità, Servizi) *@
+        @* <li class="nav-item"><a class="nav-link @ManageNavPages.ExpertAvailabilityNavClass(ViewContext)" id="expert-availability" asp-controller="ExpertAvailability" asp-action="Index">Disponibilità</a></li> *@
+    }
+    @* --------------------------------------- *@
+</ul>

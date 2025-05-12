@@ -1,0 +1,47 @@
+﻿@* File: Views/AdminSpecializations/Details.cshtml *@
+@model Doceity.Models.Specialization
+
+@{
+    ViewData["Title"] = "Dettaglio Specializzazione: " + Model.Name;
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // O il tuo layout admin
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <h4>@Model.Name</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SpecializationId)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.SpecializationId)</dd>
+
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Description)</dt>
+        <dd class="col-sm-9" style="white-space: pre-wrap;">@(string.IsNullOrWhiteSpace(Model.Description) ? "Nessuna descrizione fornita." : Model.Description)</dd>
+    </dl>
+
+    @if (Model.ExpertSpecializations != null && Model.ExpertSpecializations.Any())
+    {
+        <h5 class="mt-4">Esperti con questa Specializzazione (@Model.ExpertSpecializations.Count):</h5>
+        <ul class="list-group">
+            @foreach (var es in Model.ExpertSpecializations)
+            {
+                if (es.User != null) // Controllo null per sicurezza
+                {
+                    <li class="list-group-item">@es.User.FirstName @es.User.LastName (@es.User.Email)</li>
+                }
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="mt-3"><em>Nessun esperto è attualmente associato a questa specializzazione.</em></p>
+    }
+</div>
+<hr />
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.SpecializationId" class="btn btn-primary">Modifica</a> |
+    <a asp-action="Index" class="btn btn-secondary">Torna alla Lista</a>
+</div>

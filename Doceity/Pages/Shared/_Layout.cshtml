@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Doceity</title>
+
+    <!-- Bootstrap CSS (Keep) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Link to the NEW Theme CSS -->
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+
+    <!-- Comment out or REMOVE the original site.css -->
+    <!-- <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> -->
+    <!-- Scoped CSS (Keep) -->
+    <link rel="stylesheet" href="~/Doceity.styles.css" asp-append-version="true" />
+
+    <!-- Bootstrap Icons (Keep) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Google Font Outfit (Required by theme.css) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Inline Styles (Cleaned up - only keep non-conflicting utilities/layouts) -->
+    <style>
+        /* Utility style - OK to keep */
+        .chat-message {
+            max-width: 90%; /* Prevents messages from being too wide */
+        }
+
+        /* REMOVED specific background/color rules for user/bot/error/typing messages
+                   as they are now defined and styled more specifically in theme.css */
+
+        /* Layout style for chat messages container - OK to keep */
+        #chat-messages {
+            display: flex;
+            flex-direction: column;
+            /* height and overflow are handled by theme.css or flex */
+        }
+    </style>
+</head>
+<body style="padding-top: 0;">
+    @* Remove default Bootstrap padding-top if header is fixed/themed differently *@
+
+    <header>
+        @* Navbar structure remains, but background/border classes removed as <header> handles styling *@
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/Index">Doceity</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @* Add other nav links here if needed - they will inherit theme styling *@
+                        @* Example:
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Services">Servizi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/About">Chi Siamo</a>
+                        </li>
+                         *@
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @* Optional: Add a div for particles if you implement the JS part from theme.css *@
+    @* <div class="particles" id="particle-container"></div> *@
+
+    @* Main content area. Use <section> tags within your specific views (like Index.cshtml)
+       and apply theme classes like 'hero' or add content like cards, FAQs etc. *@
+    <div class="main-content-container">
+        @* Renamed to avoid conflict with bootstrap .container styling within sections *@
+        <main role="main" class="pb-3">
+            @RenderBody() @* Content from specific pages goes here *@
+        </main>
+    </div>
+
+    @* Footer styled by theme.css targeting the 'footer' tag *@
+    <footer class="border-top footer">
+        @* Removed text-muted, theme handles text color *@
+        <div class="container">
+            © @DateTime.Now.Year - Doceity - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            @* Example social links structure matching theme.css styling *@
+            <div class="social-links mt-3">
+                <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i class="bi bi-facebook"></i></a>
+                <a href="#" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i class="bi bi-twitter"></i></a>
+                <a href="#" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="bi bi-linkedin"></i></a>
+                <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="bi bi-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    @* --- Hidden AntiForgery Form (Keep) --- *@
+    <form id="antiForgeryTokenFormForAjax" method="post" style="display:none;">@Html.AntiForgeryToken()</form>
+    @* -------------------------------------------------------------------------------- *@
+
+    <!-- Chat Button (HTML kept, styling via #open-chat-btn in theme.css) -->
+    <button id="open-chat-btn" class="rounded-circle shadow" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050;">
+        @* Updated Icon Example & removed text as per theme.css style *@
+        <i class="bi bi-chat-quote-fill"></i>
+    </button>
+
+    <!-- Chat Widget (HTML kept, styling via #chat-widget and its children in theme.css) -->
+    <div id="chat-widget" class="card shadow-lg" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; max-height: 500px; z-index: 1050;">
+        @* Removed bg-primary, text-white from header - theme.css handles it *@
+        <div class="card-header">
+            Assistente Doceity
+            @* Removed btn-close-white - theme.css styles #close-chat-btn *@
+            <button type="button" id="close-chat-btn" class="btn-close float-end" aria-label="Close"></button>
+        </div>
+        <div id="chat-messages" class="card-body overflow-auto">
+            <!-- Initial message structure -->
+            <div class="chat-message bot-message mb-2 d-flex justify-content-start">
+                <div class="p-2 rounded me-auto">Ciao! Sono l'assistente virtuale di Doceity. Come posso aiutarti oggi?</div>
+            </div>
+            <!-- Messages will be appended here by JS -->
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="chat-input" class="form-control" placeholder="Scrivi la tua domanda...">
+                @* Removed btn-primary from button - theme.css handles #send-chat-btn *@
+                <button id="send-chat-btn" class="btn" type="button">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* --- Essential Scripts (Keep) --- *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* ------------------------ *@
+
+    @* --- SCRIPT PER LA CHAT (Keep YOUR WORKING VERSION) --- *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const openChatBtn = document.getElementById('open-chat-btn');
+            const closeChatBtn = document.getElementById('close-chat-btn');
+            const chatWidget = document.getElementById('chat-widget');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendChatBtn = document.getElementById('send-chat-btn');
+
+            const antiForgeryTokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const antiForgeryToken = antiForgeryTokenInput ? antiForgeryTokenInput.value : null;
+
+            // Element check
+            if (!openChatBtn || !chatWidget || !closeChatBtn || !chatMessages || !chatInput || !sendChatBtn) {
+                console.warn("Elementi della chat non trovati. L'assistente AI potrebbe non funzionare.");
+                if(openChatBtn) openChatBtn.style.display = 'none'; // Hide button if widget incomplete
+                return;
+            }
+
+            // Token check
+            if (!antiForgeryToken) {
+                console.error("CRITICO: Token AntiForgery (__RequestVerificationToken) non trovato nel DOM. Le chiamate POST falliranno.");
+                chatInput.disabled = true;
+                sendChatBtn.disabled = true;
+                chatInput.placeholder = "Errore di configurazione.";
+                // Show widget with error message
+                 chatWidget.style.display = 'flex'; // Make widget visible to show error
+                 appendMessage("Impossibile avviare la chat: errore di configurazione del server (Token mancante). Si prega di contattare il supporto.", 'bot-message error-message');
+                return; // Stop chat script execution
+            } else {
+                console.log("Token AntiForgery trovato e caricato per la chat.");
+            }
+
+            // Event Listeners
+            openChatBtn.addEventListener('click', () => {
+                // Use 'flex' display as set in theme.css for #chat-widget
+                chatWidget.style.display = (chatWidget.style.display === 'none' || chatWidget.style.display === '') ? 'flex' : 'none';
+                if (chatWidget.style.display !== 'none') {
+                    chatInput.focus();
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            closeChatBtn.addEventListener('click', () => {
+                chatWidget.style.display = 'none';
+            });
+
+            sendChatBtn.addEventListener('click', sendMessageToBot);
+            chatInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Prevent form submission/new line
+                    sendMessageToBot();
+                }
+            });
+
+            // Async function to send message
+            async function sendMessageToBot() {
+                const userMessage = chatInput.value.trim();
+                if (userMessage === '') return;
+
+                appendMessage(userMessage, 'user-message'); // Append user message visually
+                chatInput.value = ''; // Clear input
+                chatInput.disabled = true; // Disable input during processing
+                sendChatBtn.disabled = true;
+
+                appendMessage("Sto pensando...", 'bot-message', true); // Show typing indicator
+
+                // Get potentially updated token just before sending
+                const currentToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? antiForgeryToken;
+                 if (!currentToken) {
+                     console.error("Invio fallito: Token AntiForgery non più disponibile.");
+                     removeTypingIndicator();
+                     appendMessage("Errore critico durante l'invio: impossibile verificare la richiesta. Ricarica la pagina.", 'bot-message error-message');
+                     // Keep input disabled as state is uncertain
+                     return;
+                 }
+
+                try {
+                    // NOTE: Ensure '/FaqBot/AskGemini' is the correct endpoint URL
+                    const response = await fetch('/FaqBot/AskGemini', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': currentToken // Send the token
+                        },
+                        body: JSON.stringify({ question: userMessage })
+                    });
+
+                    removeTypingIndicator(); // Remove "Sto pensando..."
+
+                    if (!response.ok) {
+                        // Attempt to parse error details from server response
+                        let errorText = `Errore ${response.status}: ${response.statusText}`;
+                        try {
+                            const errorData = await response.json();
+                            // Look for common error structures (ASP.NET Core ProblemDetails, custom errors)
+                            if (errorData.title) { errorText = `${errorData.title} (Status: ${response.status})`; }
+                            if (errorData.detail) { errorText += ` Dettagli: ${errorData.detail}`; }
+                            else if (errorData.message) { errorText += ` Dettagli: ${errorData.message}`; }
+                            else if (errorData.errors) { errorText += ` Dettagli: ${JSON.stringify(errorData.errors)}`; }
+                            else if (!errorData.title && !errorData.detail && !errorData.message && !errorData.errors) {
+                                // Fallback if json is not a standard error format
+                                let responseBody = await response.text(); // Get raw text
+                                errorText += ` Risposta server: ${responseBody.substring(0, 200)}${responseBody.length > 200 ? '...' : ''}`; // Limit length
+                            }
+                         } catch (e) {
+                             // If response is not JSON or parsing fails
+                             let responseBody = await response.text();
+                             errorText += ` Risposta server non JSON: ${responseBody.substring(0, 200)}${responseBody.length > 200 ? '...' : ''}`;
+                         }
+                        throw new Error(errorText); // Throw combined error message
+                    }
+
+                    const data = await response.json(); // Parse successful response
+
+                    if (data && typeof data.answer === 'string') {
+                        appendMessage(data.answer, 'bot-message'); // Display bot's answer
+                    } else {
+                        // Handle cases where response is 200 OK but data format is unexpected
+                        console.error("Risposta dal server valida (200 OK) ma formato dati inatteso:", data);
+                        appendMessage("Ho ricevuto una risposta inaspettata dal server. Prova a riformulare la domanda.", 'bot-message error-message');
+                    }
+
+                } catch (error) {
+                    // Catch network errors or errors thrown from response handling
+                    console.error('Errore durante la comunicazione con il bot:', error);
+                    removeTypingIndicator(); // Ensure indicator is removed on error
+                    // Display a user-friendly error message, including details from error.message
+                    appendMessage(`Si è verificato un problema: ${error.message}`, 'bot-message error-message');
+                } finally {
+                    // Re-enable input regardless of success or failure
+                    chatInput.disabled = false;
+                    sendChatBtn.disabled = false;
+                    chatInput.focus(); // Set focus back to input
+                }
+            }
+
+             // Function to add messages to the chat window
+            function appendMessage(text, messageTypeClasses, isTyping = false) {
+                const messageWrapper = document.createElement('div');
+                // Base classes for all messages
+                messageWrapper.classList.add('chat-message', 'mb-2', 'd-flex');
+
+                // Add specific type classes (e.g., 'user-message' or 'bot-message error-message')
+                const classes = typeof messageTypeClasses === 'string' ? messageTypeClasses.split(' ').filter(c => c) : [];
+                classes.forEach(cls => messageWrapper.classList.add(cls));
+
+                // Inner div holding the text bubble
+                const messageContent = document.createElement('div');
+                messageContent.classList.add('p-2', 'rounded');
+                messageContent.style.maxWidth = '85%'; // Prevent bubble from being too wide
+                messageContent.style.wordWrap = 'break-word'; // Allow long words to break
+
+                // Sanitize text before setting as textContent to prevent XSS
+                // textContent automatically handles escaping, so it's safe
+                messageContent.textContent = text;
+
+                // Special handling for typing indicator
+                if (isTyping) {
+                    messageWrapper.id = 'typing-indicator'; // Assign ID for easy removal
+                    // Apply italic/muted styling via CSS rules in theme.css for #typing-indicator .rounded
+                }
+
+                // Apply alignment based on message type
+                if (messageWrapper.classList.contains('user-message')) {
+                    messageWrapper.classList.add('justify-content-end'); // Align wrapper right
+                    messageContent.classList.add('ms-auto'); // Align bubble right within wrapper
+                    // Background/color are handled by theme.css rule: #chat-widget .chat-message.user-message .rounded
+                } else { // Assumed bot message (normal or error)
+                    messageWrapper.classList.add('justify-content-start'); // Align wrapper left
+                    messageContent.classList.add('me-auto'); // Align bubble left within wrapper
+                    // Background/color/border are handled by theme.css rules:
+                    // #chat-widget .chat-message.bot-message .rounded:not(.error-message)
+                    // #chat-widget .chat-message.bot-message.error-message .rounded
+                    // #chat-widget #typing-indicator .rounded
+                }
+
+                messageWrapper.appendChild(messageContent);
+                chatMessages.appendChild(messageWrapper);
+                // Scroll to the bottom smoothly
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }
+
+
+            // Function to remove the typing indicator
+            function removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+        });
+    </script>
+    @* ------------------------------------------ *@
+
+    @* --- Optional Particle Script (Uncomment if needed) --- *@
+    @*
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const particleContainer = document.getElementById('particle-container'); // Target the container DIV
+            if (particleContainer) {
+                const particleCount = 50; // Adjust density
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    if (Math.random() > 0.6) {
+                       particle.classList.add('pink'); // Mix in some pink particles
+                    }
+                    const size = Math.random() * 4 + 1; // Size 1px to 5px
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100 + 100}%`; // Start below viewport
+                    const duration = Math.random() * 40 + 30; // Duration 30-70s
+                    const delay = Math.random() * -60; // Start at different points in animation cycle
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${delay}s`;
+                    particleContainer.appendChild(particle);
+                }
+            } else {
+                console.warn("Particle container not found. Particles will not be displayed.");
+            }
+        });
+    </script>
+    *@
+
+    @await RenderSectionAsync("Scripts", required: false) @* For page-specific scripts *@
+
+</body>
+</html>

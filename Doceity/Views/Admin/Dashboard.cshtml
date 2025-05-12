@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+    // Modifica il percorso del layout qui:
+    Layout = "/Pages/Shared/_Layout.cshtml"; // Usa il percorso dalla root dell'app
+}
+
+<div class="container mt-4">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    <p class="lead">Benvenuto nell'area amministrativa di Doceity.</p>
+    <hr class="my-4">
+
+    <div class="row gy-4">
+        @* gy-4 per spazio verticale tra le righe su mobile *@
+        <div class="col-md-6 col-lg-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-header">Gestione Utenti</div>
+                <div class="card-body">
+                    <i class="bi bi-people-fill display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Utenti e Ruoli</h5>
+                    <p class="card-text">Visualizza e gestisci gli utenti registrati e i loro ruoli.</p>
+                    <a asp-controller="Admin" asp-action="UserManagement" class="btn btn-primary">Gestisci Utenti</a> @* Link a futura azione *@
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-header">Approvazione Esperti</div>
+                <div class="card-body">
+                    <i class="bi bi-person-check-fill display-4 text-success mb-3"></i>
+                    <h5 class="card-title">Esperti in Attesa</h5>
+                    <p class="card-text">Approva o rifiuta le richieste degli utenti che vogliono diventare Esperti.</p>
+                    <a asp-controller="Admin" asp-action="ApproveExperts" class="btn btn-success">Approva Esperti</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-header">Gestione Contenuti</div>
+                <div class="card-body">
+                    <i class="bi bi-journal-richtext display-4 text-info mb-3"></i>
+                    <h5 class="card-title">Corsi e Altro</h5>
+                    <p class="card-text">Gestisci i corsi live, le categorie di consulenza e altri contenuti.</p>
+                    <a asp-controller="Admin" asp-action="ContentManagement" class="btn btn-info">Gestisci Contenuti</a> @* Link a futura azione *@
+                </div>
+            </div>
+        </div>
+
+        @* Aggiungi altre card per statistiche, impostazioni, ecc. *@
+
+    </div>
+</div>

@@ -1,0 +1,143 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Registrati a Doceity";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-7">
+        @* Allargato un po' *@
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h2>Crea un nuovo account</h2>
+            <p>Entra nella community di Doceity come utente o esperto.</p>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" placeholder="Mario" aria-required="true" />
+                        <label asp-for="Input.FirstName">Nome</label>
+                        <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" placeholder="Rossi" aria-required="true" />
+                        <label asp-for="Input.LastName">Cognome</label>
+                        <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" aria-required="true" />
+                <label asp-for="Input.Email">Email</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" placeholder="password" aria-required="true" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="password" aria-required="true" />
+                        <label asp-for="Input.ConfirmPassword">Conferma Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+
+            @* -------- BLOCCO SCELTA TIPO ACCOUNT -------- *@
+            <div class="form-group mb-4">
+                @* Aumentato margine sotto *@
+                <label asp-for="Input.AccountType" class="control-label mb-2 fw-bold"></label> @* Aggiunto stile *@
+                <div>
+                    <div class="form-check">
+                        @* Tolto inline per metterli uno sotto l'altro *@
+                        <input class="form-check-input" type="radio" asp-for="Input.AccountType" id="accountTypeUser" value="User" checked>
+                        <label class="form-check-label" for="accountTypeUser">
+                            Sono un <strong>Utente</strong> (voglio cercare Esperti e seguire Corsi)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="Input.AccountType" id="accountTypeExpert" value="Expert">
+                        <label class="form-check-label" for="accountTypeExpert">
+                            Sono un <strong>Esperto</strong> (voglio offrire Consulenze e Corsi)
+                        </label>
+                        <div id="expertInfo" class="form-text mt-1" style="display: none; margin-left: 1.25em;">
+                            <small>Il tuo profilo Esperto richiederà l'approvazione di un amministratore prima di essere attivato.</small>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="Input.AccountType" class="text-danger d-block mt-1"></span> @* Reso block per andare sotto *@
+            </div>
+            @* ------------------------------------------- *@
+
+
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Registrati Ora</button>
+        </form>
+    </div>
+    <div class="col-md-4 col-md-offset-1">
+        @* Spostato a destra *@
+        <section>
+            <h4>Usa un altro servizio</h4>
+            <hr />
+            @{
+                if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                {
+                    <div>
+                        <p>
+                            Non ci sono servizi di autenticazione esterni configurati.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                        <div>
+                            <p>
+                                @foreach (var provider in Model.ExternalLogins!)
+                                {
+                                    <button type="submit" class="btn btn-outline-secondary w-100 mb-2" name="provider" value="@provider.Name" title="Accedi usando il tuo account @provider.DisplayName">
+                                        <i class="bi bi-google me-2"></i> @* Esempio icona - adatta per provider *@
+                                        Accedi con @provider.DisplayName
+                                    </button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Mostra/nascondi l'avviso per gli esperti
+        $(document).ready(function () {
+            function toggleExpertInfo() {
+                 if ($('#accountTypeExpert').is(':checked')) {
+                    $('#expertInfo').slideDown('fast');
+                } else {
+                    $('#expertInfo').slideUp('fast');
+                }
+            }
+
+            $('input[type=radio][name="Input.AccountType"]').change(toggleExpertInfo);
+
+            // Esegui al caricamento iniziale
+            toggleExpertInfo();
+        });
+    </script>
+}

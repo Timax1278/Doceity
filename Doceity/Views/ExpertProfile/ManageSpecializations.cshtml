@@ -1,0 +1,68 @@
+﻿@* File: Views/ExpertProfile/ManageSpecializations.cshtml *@
+@model Doceity.ViewModels.ExpertManageSpecializationsViewModel
+
+@{
+    ViewData["Title"] = "Gestisci le Tue Specializzazioni";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Seleziona le aree di competenza che meglio descrivono i servizi e i corsi che offri, @Model.ExpertFullName.</p>
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (!Model.AvailableSpecializations.Any())
+{
+    <div class="alert alert-warning">
+        Nessuna specializzazione è stata ancora definita dall'amministratore della piattaforma.
+        Non appena saranno disponibili, potrai selezionarle qui.
+    </div>
+}
+else
+{
+    <form asp-action="ManageSpecializations" method="post">
+        @Html.AntiForgeryToken()
+        @* Campo nascosto per inviare l'ExpertUserId per verifica nel POST *@
+        <input type="hidden" asp-for="ExpertUserId" />
+
+        <div class="mb-3">
+            <label asp-for="AvailableSpecializations" class="form-label fw-bold"></label>
+            @if (ViewContext.ModelState.ContainsKey(string.Empty))
+            {
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            }
+            <div class="list-group">
+                @for (int i = 0; i < Model.AvailableSpecializations.Count; i++)
+                {
+                    <label class="list-group-item list-group-item-action">
+                        <input type="hidden" asp-for="@Model.AvailableSpecializations[i].SpecializationId" />
+                        <input type="hidden" asp-for="@Model.AvailableSpecializations[i].Name" />
+                        <input type="checkbox" asp-for="@Model.AvailableSpecializations[i].IsSelected" class="form-check-input me-2" />
+                        @Model.AvailableSpecializations[i].Name
+                    </label>
+                }
+            </div>
+            @* <span asp-validation-for="AvailableSpecializations" class="text-danger"></span> *@
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Salva Specializzazioni</button>
+            @* Link per tornare a una dashboard esperto o alla home *@
+            <a asp-controller="ExpertDashboard" asp-action="Index" class="btn btn-secondary">Annulla</a>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

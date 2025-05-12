@@ -1,0 +1,908 @@
+﻿/* wwwroot/css/theme.css - Versione Completa Unificata - Testo Bianco */
+
+/* ==========================================================================
+   Variabili e Stili di Base
+   ========================================================================== */
+
+:root {
+    --primary-dark: #1a0933;
+    --primary: #2b1154;
+    --accent-pink: #e83acb;
+    --accent-blue: #3ac8e8;
+    --text-light: #ffffff;          /* Bianco per TUTTO il testo */
+    /* --text-secondary: #ced4da;      RIMOSSO USO -> Usiamo --text-light */
+    /* --text-muted-custom: #adb5bd;   RIMOSSO USO -> Usiamo --text-light o rgba */
+    --text-muted-white: rgba(255, 255, 255, 0.8); /* Bianco leggermente attenuato per dettagli */
+    --placeholder-color: rgba(255, 255, 255, 0.7); /* Bianco per placeholder */
+    --gradient-bg: linear-gradient(135deg, #1a0933 0%, #2b1154 100%);
+    --card-bg: rgba(43, 17, 84, 0.3);
+    --card-hover: rgba(58, 20, 110, 0.4);
+    --input-bg: rgba(26, 9, 51, 0.7);
+    --input-border: rgba(140, 90, 255, 0.3);
+    --input-focus-bg: rgba(43, 17, 84, 0.8);
+    --table-border-color: rgba(255, 255, 255, 0.1);
+    --accent-blue-rgb: 58, 200, 232; /* Per box-shadow focus */
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--gradient-bg);
+    color: var(--text-light); /* *** CAMBIO CHIAVE: Colore testo default BIANCO *** */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Container principale per Flexbox Sticky Footer */
+main[role="main"],
+.content-wrapper {
+    flex-grow: 1;
+}
+
+/* ==========================================================================
+   Header e Navbar
+   ========================================================================== */
+
+header {
+    background-color: rgba(13, 5, 31, 0.85) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--input-border) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+    margin-bottom: 0 !important;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.navbar {
+    padding: 0.75rem 0;
+    background-color: transparent !important;
+    border-bottom: none !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: 1px;
+    color: var(--text-light) !important;
+    transition: color 0.3s ease;
+}
+.navbar-brand:hover {
+    color: var(--accent-blue) !important;
+}
+
+/* Link Navbar */
+header .navbar-light .navbar-nav .nav-link {
+    color: var(--text-light) !important; /* *** CAMBIATO: Sempre bianco *** */
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease, transform 0.2s ease;
+    opacity: 0.9; /* Leggermente meno enfasi rispetto all'hover/active */
+}
+header .navbar-light .navbar-nav .nav-link:hover,
+header .navbar-light .navbar-nav .nav-link.active {
+    color: var(--accent-blue) !important; /* Mantiene colore hover/attivo */
+    transform: translateY(-2px);
+    opacity: 1;
+}
+
+/* Toggler Navbar */
+.navbar-light .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important; /* Assicurati sia bianco */
+}
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.5) !important; /* Bordo bianco trasparente */
+}
+
+/* Dropdown Navbar */
+.navbar .dropdown-menu {
+    z-index: 1050;
+    background-color: var(--primary-dark);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.navbar .dropdown-item {
+    color: var(--text-light); /* *** CAMBIATO: Sempre bianco *** */
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    padding: 0.6rem 1.25rem;
+    opacity: 0.9;
+}
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+    color: var(--text-light); /* Rimane bianco su hover colorato */
+    background-color: var(--accent-blue);
+    opacity: 1;
+}
+.navbar .dropdown-item.active,
+.navbar .dropdown-item:active {
+    color: var(--text-light); /* Rimane bianco su hover colorato */
+    background-color: var(--accent-pink);
+    opacity: 1;
+}
+.navbar .dropdown-header {
+    color: var(--accent-pink); /* Header mantiene colore accento */
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+    padding: 0.75rem 1.25rem 0.25rem;
+}
+.navbar .dropdown-divider {
+    border-top: 1px solid var(--input-border);
+    margin: 0.5rem 0;
+}
+
+/* ==========================================================================
+   Contenuto Principale e Tipografia
+   ========================================================================== */
+
+.container {
+    max-width: 1200px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+section {
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hero section */
+.hero {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+.hero::before, .hero::after { /* Stili decorativi non cambiano */
+    content: '';
+    position: absolute;
+    background: radial-gradient(circle at 70% 30%, rgba(232, 58, 203, 0.15), transparent 55%);
+    z-index: 0;
+    pointer-events: none;
+    top: 0; left: 0; width: 100%; height: 100%;
+}
+.hero::after {
+    bottom: -10%; right: -10%; width: 50%; height: 50%; top: auto; left: auto; /* Reset pos */
+    background: radial-gradient(circle, rgba(58, 200, 232, 0.15), transparent 65%);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    color: var(--text-light); /* Già bianchi */
+}
+h1 { font-size: 3.0rem; margin-bottom: 1.5rem; }
+h2 { font-size: 2.2rem; position: relative; padding-bottom: 1rem; margin-bottom: 2rem; }
+h3 { font-size: 1.8rem; }
+h4 { font-size: 1.4rem; }
+
+/* Titoli di pagina specifici */
+.page-title {
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    padding-bottom: 0.5rem;
+}
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-light); /* *** CAMBIATO: Sempre bianco *** */
+    opacity: 0.9; /* Leggermente attenuato */
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Linea sotto H2 */
+h2.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+}
+
+/* Paragrafi e Liste (ereditano da body, quindi bianchi) */
+p {
+    margin-bottom: 1rem;
+    /* color: var(--text-light); Assicurato da body */
+}
+ul, ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+li {
+    margin-bottom: 0.5rem;
+}
+
+
+/* ==========================================================================
+   Tabelle
+   ========================================================================== */
+
+.table {
+    color: var(--text-light); /* *** CAMBIATO: Testo default celle BIANCO *** */
+    border-color: var(--table-border-color);
+    margin-bottom: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Header Tabella */
+.table thead th {
+    color: var(--text-light); /* Già bianco */
+    background-color: rgba(0, 0, 0, 0.25);
+    border-bottom: 2px solid var(--accent-blue);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    padding: 0.75rem 1rem;
+    border-top: none;
+}
+.table thead th:first-child { border-top-left-radius: 8px; }
+.table thead th:last-child { border-top-right-radius: 8px; }
+
+/* Celle Corpo Tabella */
+.table tbody td {
+    border-color: var(--table-border-color);
+    vertical-align: middle;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--table-border-color);
+    /* color: var(--text-light); Assicurato da .table */
+}
+
+/* Righe Tabella */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+.table-hover tbody tr:hover {
+    color: var(--text-light); /* Rimane bianco */
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Link dentro le tabelle */
+.table a {
+    color: var(--text-light); /* *** CAMBIATO: Link bianchi *** */
+    text-decoration: underline; /* Sottolinea per indicare link */
+    transition: color 0.2s ease;
+}
+.table a:hover {
+    color: var(--accent-blue); /* Cambia colore hover */
+    /* text-decoration: none; /* Opzionale: rimuovi underline hover */
+}
+
+/* Badge di stato */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5em 0.75em;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    color: var(--text-light) !important; /* *** CAMBIO CHIAVE: Forza bianco su tutti i badge *** */
+}
+/* Rimuoviamo gli override specifici di colore testo per i badge,
+   ora gestiti dalla regola generale sopra */
+/* .badge.bg-success { color: white !important; } */
+/* .badge.bg-danger { color: white !important; } */
+/* .badge.bg-warning.text-dark { color: var(--primary-dark) !important; } */
+/* .badge.bg-secondary { color: white !important; } */
+
+
+/* Pulsanti nelle tabelle */
+.table .btn-group-vertical .btn,
+.table .btn-group .btn {
+    margin-bottom: 0.25rem;
+    border-radius: 20px !important;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.table .btn-group-vertical .btn:last-child,
+.table .btn-group .btn:last-child {
+    margin-bottom: 0;
+}
+
+/* Stile specifico pulsanti tabelle (il testo è gestito dal .btn) */
+.table .btn.btn-info,
+.table .btn.btn-danger,
+.table .btn.btn-warning {
+    color: var(--text-light) !important; /* Forza bianco */
+}
+.table .btn.btn-info { background: linear-gradient(90deg, var(--accent-blue), #52d5f1); border: none; }
+.table .btn.btn-info:hover { filter: brightness(1.1); transform: scale(1.05); color: var(--text-light) !important; }
+
+.table .btn.btn-danger { background: linear-gradient(90deg, #dc3545, #c02e3d); border: none; }
+.table .btn.btn-danger:hover { filter: brightness(1.1); transform: scale(1.05); color: var(--text-light) !important; }
+
+.table .btn.btn-warning { background: linear-gradient(90deg, #ffc107, #d9a406); border: none; }
+.table .btn.btn-warning:hover { filter: brightness(1.1); transform: scale(1.05); color: var(--text-light) !important; }
+
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    height: 100%;
+    color: var(--text-light); /* *** Testo default card BIANCO *** */
+    margin-bottom: 1.5rem;
+}
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    background: var(--card-hover);
+}
+.card-header {
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid var(--input-border);
+    padding: 1rem 1.25rem;
+    color: var(--text-light); /* Già bianco */
+    font-weight: 600;
+}
+.card-body {
+    padding: 1.5rem;
+}
+/* Testo p/li dentro card eredita da .card, quindi bianco */
+/* .card-body p, .card-body li { color: var(--text-light); } */
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+.card-title {
+    color: var(--text-light); /* Già bianco */
+    margin-bottom: 1rem;
+}
+.card-text:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ==========================================================================
+   Pulsanti Generali
+   ========================================================================== */
+
+.btn {
+    border-radius: 30px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    display: inline-block;
+    color: var(--text-light) !important; /* *** CAMBIO CHIAVE: Testo bottoni sempre bianco *** */
+}
+.btn:focus, .btn.focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--accent-blue-rgb), 0.5);
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+    box-shadow: 0 5px 15px rgba(232, 58, 203, 0.3);
+    /* color: var(--text-light) !important; Assicurato da .btn */
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(232, 58, 203, 0.5);
+    /* color: var(--text-light); Assicurato da .btn */
+}
+
+.btn-secondary {
+    background-color: var(--card-bg);
+    border: 1px solid var(--input-border);
+    /* color: var(--text-light); Assicurato da .btn */
+}
+.btn-secondary:hover {
+    background-color: var(--card-hover);
+    border-color: var(--accent-blue);
+    /* color: var(--text-light); Assicurato da .btn */
+}
+
+.btn-outline-light {
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    background-color: transparent;
+    /* color: var(--text-light); Assicurato da .btn */
+}
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--text-light);
+    /* color: var(--text-light); Assicurato da .btn */
+}
+
+/* ==========================================================================
+   Form Elements
+   ========================================================================== */
+
+label, .form-label {
+    color: var(--text-light); /* Già bianco */
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Stile generale per input, textarea, select */
+.form-control,
+input[type="text"], input[type="email"], input[type="password"],
+input[type="date"], input[type="time"], input[type="number"],
+input[type="search"], input[type="tel"], input[type="url"],
+textarea, select {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-light) !important; /* Già bianco */
+    background-color: var(--input-bg) !important;
+    background-clip: padding-box;
+    border: 1px solid var(--input-border) !important;
+    border-left: 3px solid var(--accent-pink) !important;
+    appearance: none;
+    border-radius: 8px;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, background-color .15s ease-in-out, border-left-color .15s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+/* Stile focus */
+.form-control:focus,
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
+input[type="date"]:focus, input[type="time"]:focus, input[type="number"]:focus,
+input[type="search"]:focus, input[type="tel"]:focus, input[type="url"]:focus,
+textarea:focus, select:focus {
+    color: var(--text-light) !important; /* Già bianco */
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--accent-blue) !important;
+    border-left-color: var(--accent-blue) !important;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--accent-blue-rgb), 0.25) !important;
+}
+
+/* Placeholder */
+::placeholder {
+    color: var(--placeholder-color); /* *** CAMBIATO: Bianco trasparente *** */
+    opacity: 1;
+}
+.form-control::placeholder { color: var(--placeholder-color); }
+
+/* Select (freccia custom) */
+select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); /* Freccia bianca */
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+    padding-right: 3rem;
+}
+select.form-control:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233ac8e8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); /* Freccia blu al focus */
+}
+
+/* Checkbox e Radio */
+.form-check {
+    display: block;
+    min-height: 1.5rem;
+    padding-left: 1.75em;
+    margin-bottom: 0.75rem;
+}
+.form-check .form-check-input {
+    float: left;
+    margin-left: -1.75em;
+}
+.form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+    margin-top: 0.125em;
+    vertical-align: top;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    appearance: none;
+    border-radius: 0.35em;
+    transition: background-color .15s ease-in-out, background-position .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+.form-check-input[type="radio"] { border-radius: 50%; }
+.form-check-input:active { filter: brightness(90%); }
+.form-check-input:focus {
+    border-color: var(--accent-blue);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--accent-blue-rgb), 0.25);
+}
+.form-check-input:checked {
+    background-color: var(--accent-pink);
+    border-color: var(--accent-pink);
+}
+.form-check-input:checked[type="checkbox"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+.form-check-input:checked[type="radio"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
+}
+.form-check-label {
+    color: var(--text-light); /* *** CAMBIATO: Label bianca *** */
+    cursor: pointer;
+}
+
+/* Stile input disabilitati */
+.form-control:disabled, .form-control[readonly] {
+    background-color: rgba(43, 17, 84, 0.4) !important;
+    opacity: 0.7;
+    border-left-color: var(--input-border) !important;
+}
+.form-check-input:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.form-check-input:disabled ~ .form-check-label {
+    opacity: 0.7;
+}
+
+
+/* ==========================================================================
+   Sezioni Specifiche (FAQ, Servizi, Testimonial)
+   ========================================================================== */
+
+/* FAQ section */
+.faq-item {
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--input-border);
+    transition: background-color 0.3s ease;
+}
+.faq-item:hover { background-color: var(--card-hover); }
+.faq-question {
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-light); /* Già bianco */
+    position: relative;
+}
+.faq-question::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: var(--accent-blue);
+    transition: transform 0.3s ease;
+}
+.faq-item[open] .faq-question::after {
+    content: '−';
+    transform: rotate(180deg);
+}
+.faq-answer {
+    padding: 0 1.5rem 1.25rem;
+    color: var(--text-light); /* *** CAMBIATO: Risposta bianca *** */
+    opacity: 0.9; /* Attenuata leggermente */
+    font-size: 0.95rem;
+}
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+
+/* Services */
+.service-card {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    border: 1px solid var(--input-border);
+    height: 100%;
+}
+.service-card:hover {
+    transform: translateY(-10px);
+    background: var(--card-hover);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+.service-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-blue);
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+.service-card:hover .service-icon { transform: scale(1.1) rotate(-10deg); }
+.service-card h4 { margin-bottom: 1rem; color: var(--text-light); } /* Titolo bianco */
+.service-card p { color: var(--text-light); opacity: 0.9; } /* *** CAMBIATO: Descrizione bianca (attenuata) *** */
+
+/* Testimonials */
+.testimonial {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2.5rem 2rem 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--input-border);
+}
+.testimonial::before {
+    content: '"';
+    position: absolute;
+    top: -10px; left: 15px;
+    font-size: 7rem;
+    font-family: serif;
+    color: var(--accent-pink);
+    opacity: 0.2;
+    line-height: 1;
+    z-index: 0;
+    pointer-events: none;
+}
+.testimonial p { /* Testo testimonianza */
+    position: relative;
+    z-index: 1;
+    color: var(--text-light); /* *** CAMBIATO: Testo bianco *** */
+    font-style: italic;
+    margin-bottom: 1.5rem;
+}
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+.testimonial-avatar {
+    width: 55px; height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 1rem;
+    border: 3px solid var(--accent-blue);
+    box-shadow: 0 0 10px rgba(var(--accent-blue-rgb), 0.3);
+}
+.testimonial-author-info { line-height: 1.3; }
+.testimonial-author strong { /* Nome autore */
+    display: block;
+    color: var(--text-light); /* Già bianco */
+    font-weight: 600;
+}
+.testimonial-author span { /* Ruolo/info autore */
+    color: var(--text-muted-white); /* *** CAMBIATO: Bianco attenuato *** */
+    font-size: 0.9em;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+footer.footer {
+    background-color: rgba(13, 5, 31, 0.95);
+    border-top: 1px solid var(--input-border);
+    padding: 2.5rem 0;
+    color: var(--text-light); /* *** Testo default footer BIANCO *** */
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+.footer.text-muted { /* Assicura bianco anche se c'è classe .text-muted */
+    color: var(--text-muted-white) !important; /* Bianco attenuato */
+}
+.footer-links h5 {
+    color: var(--accent-blue); /* Titoli link rimangono blu */
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.footer-links ul { list-style: none; padding: 0; margin: 0 0 2rem 0; }
+.footer-links li { margin-bottom: 0.75rem; }
+.footer-links a {
+    color: var(--text-light); /* *** CAMBIATO: Link bianchi *** */
+    text-decoration: none;
+    transition: color 0.3s ease;
+    opacity: 0.9;
+}
+.footer-links a:hover {
+    color: var(--accent-pink); /* Colore hover */
+    text-decoration: underline;
+    opacity: 1;
+}
+.social-links a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-light); /* Icona bianca */
+    margin: 0 0.375rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+.social-links a:hover {
+    background: var(--accent-pink);
+    transform: translateY(-3px) scale(1.1);
+    color: var(--text-light); /* Icona rimane bianca */
+    box-shadow: 0 5px 10px rgba(232, 58, 203, 0.3);
+}
+footer .container { text-align: center; }
+footer .copyright {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted-white); /* *** CAMBIATO: Bianco attenuato *** */
+}
+footer .copyright a {
+    color: var(--text-light); /* *** CAMBIATO: Link copyright bianchi *** */
+    text-decoration: underline;
+    opacity: 0.9;
+}
+footer .copyright a:hover {
+    color: var(--accent-pink); /* Colore hover */
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   Chat Widget
+   ========================================================================== */
+
+#open-chat-btn { /* Stili non cambiano */
+    position: fixed; bottom: 20px; right: 20px; z-index: 1031;
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-blue));
+    border: none; color: white; width: 60px; height: 60px; border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); transition: all 0.3s ease;
+    padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+#open-chat-btn i { font-size: 1.8rem; line-height: 1; transition: transform 0.3s ease; }
+#open-chat-btn:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); }
+#open-chat-btn:hover i { transform: rotate(-15deg); }
+
+#chat-widget { /* Stili non cambiano */
+    position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90vw;
+    height: 500px; max-height: 70vh; z-index: 1030; background-color: var(--primary-dark);
+    border: 1px solid var(--input-border); border-radius: 15px; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+#chat-widget.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+#chat-widget .card-header { /* Titolo/bottone chiusura bianchi */
+    background: linear-gradient(90deg, var(--primary), var(--accent-pink));
+    border-bottom: 1px solid var(--input-border); color: var(--text-light);
+    padding: 0.75rem 1rem; flex-shrink: 0; display: flex;
+    justify-content: space-between; align-items: center;
+}
+#chat-widget .card-header h5 { margin-bottom: 0; font-size: 1rem; text-transform: none; letter-spacing: 0.5px; }
+#chat-widget .card-header #close-chat-btn {
+    background: none; border: none; color: white; opacity: 0.8; font-size: 1.2rem;
+    padding: 0.25rem; line-height: 1; cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#chat-widget .card-header #close-chat-btn:hover { opacity: 1; transform: scale(1.1); }
+
+#chat-messages { /* Sfondo non cambia */
+    background-color: rgba(20, 10, 40, 0.7); scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) rgba(0,0,0,0.2); flex-grow: 1;
+    padding: 1rem; overflow-y: auto;
+}
+#chat-messages::-webkit-scrollbar { width: 6px; }
+#chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
+#chat-messages::-webkit-scrollbar-thumb { background-color: var(--accent-blue); border-radius: 6px; }
+#chat-messages .chat-message { margin-bottom: 0.75rem; }
+#chat-messages .chat-message .rounded { padding: 0.6rem 1rem; border-radius: 15px; max-width: 80%; word-wrap: break-word; }
+#chat-widget .chat-message.user-message { text-align: right; }
+#chat-widget .chat-message.user-message .rounded { /* Messaggio utente bianco */
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-pink));
+    color: var(--text-light); border: none; border-bottom-right-radius: 5px;
+    display: inline-block; text-align: left;
+}
+#chat-widget .chat-message.bot-message { text-align: left; }
+#chat-widget .chat-message.bot-message .rounded { /* Messaggio bot bianco */
+    background: rgba(255, 255, 255, 0.1); color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.05); border-bottom-left-radius: 5px;
+    display: inline-block;
+}
+#chat-widget .chat-message.bot-message.error-message .rounded { /* Messaggio errore bianco */
+    background-color: rgba(220, 53, 69, 0.3) !important;
+    color: var(--text-light) !important; /* *** CAMBIATO: Errore bianco *** */
+    border: 1px solid rgba(220, 53, 69, 0.4) !important;
+}
+#chat-widget #typing-indicator { text-align: left; }
+#chat-widget #typing-indicator .rounded { /* Indicatore typing bianco attenuato */
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted-white); /* *** CAMBIATO: Bianco attenuato *** */
+    border: 1px solid rgba(255, 255, 255, 0.05); border-bottom-left-radius: 5px;
+    font-style: italic; display: inline-block; font-size: 0.9rem;
+}
+
+#chat-widget .card-footer { /* Input/bottone non cambiano */
+    background-color: transparent; border-top: 1px solid var(--input-border);
+    padding: 0.75rem 1rem; flex-shrink: 0;
+}
+#chat-widget .input-group { width: 100%; display: flex; }
+#chat-input { /* Input bianco, placeholder aggiornato */
+    flex-grow: 1; margin-bottom: 0; border-right: none !important;
+    border-top-right-radius: 0; border-bottom-right-radius: 0;
+    border-left: 1px solid var(--input-border) !important; resize: none;
+    height: auto; min-height: 40px;
+    /* Color gestito da .form-control */
+}
+#chat-input::placeholder { color: var(--placeholder-color); } /* Usa variabile placeholder */
+#chat-input:focus { z-index: 2; position: relative; } /* Mantiene focus style */
+#send-chat-btn { /* Bottone invio bianco */
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+    border: none; border-top-left-radius: 0; border-bottom-left-radius: 0;
+    border-top-right-radius: 8px; border-bottom-right-radius: 8px;
+    padding: 0.375rem 1rem; flex-shrink: 0; color: white; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; transition: filter 0.2s ease;
+}
+#send-chat-btn i { font-size: 1.2rem; }
+#send-chat-btn:hover { filter: brightness(1.2); transform: none; box-shadow: none; }
+#send-chat-btn:disabled { background: var(--text-muted-white); opacity: 0.7; cursor: not-allowed; }
+
+/* ==========================================================================
+   Elementi Decorativi e Animazioni (Opzionale)
+   ========================================================================== */
+/* Stili non cambiano */
+.glow-blue, .glow-pink, .wave-divider, .float-element, .particles, .particle, .particle.pink { /* Mantieni stili precedenti */ }
+@keyframes float { /* ... */ }
+@keyframes particle-animation { /* ... */ }
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+/* Media query non cambiano struttura, solo dimensioni/padding */
+@media (max-width: 991.98px) {
+    /* ... mantieni regole responsive precedenti ... */
+    header .navbar-light .navbar-nav .nav-link { /* Assicura bianco anche nel menu mobile */
+       color: var(--text-light) !important;
+       opacity: 0.9;
+    }
+    header .navbar-light .navbar-nav .nav-link:hover,
+    header .navbar-light .navbar-nav .nav-link.active {
+       color: var(--accent-blue) !important;
+       opacity: 1;
+       background-color: rgba(var(--accent-blue-rgb), 0.1); /* Leggero sfondo hover */
+    }
+    .navbar .dropdown-item { /* Assicura bianco nel dropdown mobile */
+        color: var(--text-light);
+        opacity: 0.9;
+    }
+    .navbar .dropdown-item:hover,
+    .navbar .dropdown-item:focus {
+        color: var(--text-light); /* Rimane bianco */
+        background-color: var(--accent-blue);
+        opacity: 1;
+    }
+}
+@media (max-width: 767.98px) { /* ... mantieni regole responsive precedenti ... */ }
+@media (max-width: 575.98px) { /* ... mantieni regole responsive precedenti ... */ }

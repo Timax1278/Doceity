@@ -1,0 +1,99 @@
+﻿@* File: Views/AdminSpecializations/Index.cshtml *@
+@model IEnumerable<Doceity.Models.Specialization>
+
+@{
+    ViewData["Title"] = "Gestione Specializzazioni";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // O il tuo layout admin se ne hai uno dedicato
+}
+
+<div class="container mt-4">
+    <h1 class="mb-3">@ViewData["Title"]</h1>
+    <p>Da qui puoi aggiungere, modificare ed eliminare le specializzazioni disponibili sulla piattaforma. Gli esperti potranno poi selezionarle per il loro profilo.</p>
+
+    @* Visualizzazione dei messaggi TempData *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <p class="mt-4">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Aggiungi Nuova Specializzazione
+        </a>
+    </p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-3">
+            Nessuna specializzazione definita. Inizia creandone una!
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive mt-3">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+                        <th>@Html.DisplayNameFor(model => model.First().Description)</th>
+                        <th class="text-center">N. Esperti Associati</th>
+                        <th class="text-end">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                            <td>
+                                @{
+                                    var description = item.Description ?? ""; // Gestisce il caso di Description nulla
+                                    var shortDesc = description.Length > 100 ? description.Substring(0, 100) + "..." : description;
+                                }
+                                @Html.Raw(System.Net.WebUtility.HtmlEncode(shortDesc).Replace("\n", "<br />")) @* Encode per sicurezza e mostra a capo *@
+                            </td>
+                            <td class="text-center">
+                                @(item.ExpertSpecializations?.Count() ?? 0)
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.SpecializationId" class="btn btn-sm btn-outline-primary" title="Modifica">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.SpecializationId" class="btn btn-sm btn-outline-info ms-1" title="Dettagli">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.SpecializationId" class="btn btn-sm btn-outline-danger ms-1" title="Elimina">
+                                    <i class="bi bi-trash3"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,107 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Accedi"; // Changed Title
+    // Optionally, you can signal the layout to hide default header/footer if desired
+    // Layout = "_LayoutNoHeaderFooter"; // Example if you have such a layout
+}
+
+@* Add the main container for full-page effects and centering *@
+<div class="login-container">
+    @* Add the inner wrapper to constrain content width *@
+    <div class="login-wrapper">
+
+        <h1>@ViewData["Title"]</h1>
+        <div class="row">
+            @* This row is now inside login-wrapper *@
+            <div class="col-lg-5 col-md-6">
+                @* Use BS5 classes like col-lg-5, col-md-6 for better control *@
+                <section>
+                    <form id="account" method="post">
+                        <h2>Accedi con il tuo account</h2> @* Changed heading *@
+                        <hr />
+                        @* Use div for validation summary for better styling control *@
+                        <div asp-validation-summary="ModelOnly" class="text-danger validation-summary-errors" role="alert"></div>
+                        <div class="form-floating mb-3">
+                            @* Added mb-3 for spacing *@
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" aria-required="true" />
+                            <label asp-for="Input.Email" class="form-label"></label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" placeholder="Password" aria-required="true" />
+                            <label asp-for="Input.Password" class="form-label"></label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            @* Wrap checkbox in mb-3 for spacing *@
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="Input.RememberMe" />
+                                <label asp-for="Input.RememberMe" class="form-label">
+                                    @Html.DisplayNameFor(m => m.Input.RememberMe)
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <button id="login-submit" type="submit" class="btn btn-lg btn-primary">Accedi</button> @* Changed button text *@
+                        </div>
+                        <div class="mt-4 text-center">
+                            @* Add margin and center links *@
+                            <p class="mb-2">
+                                @* Reduce margin between links *@
+                                <a id="forgot-password" asp-page="./ForgotPassword">Password dimenticata?</a>
+                            </p>
+                            <p class="mb-2">
+                                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Registra un nuovo utente</a>
+                            </p>
+                            <p>
+                                <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Reinvia email di conferma</a>
+                            </p>
+                        </div>
+                    </form>
+                </section>
+            </div>
+            <div class="col-lg-5 col-md-6">
+                @* Use matching BS5 classes *@
+                <section>
+                    <h3>Oppure usa un altro servizio</h3> @* Changed heading *@
+                    <hr />
+                    @{
+                        if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                        {
+                            <div>
+                                <p>
+                                    Nessun servizio di autenticazione esterno configurato. Vedi <a href="https://go.microsoft.com/fwlink/?LinkID=532715">questo articolo</a>
+                                    per dettagli sulla configurazione.
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                                <div>
+                                    <p>
+                                        @foreach (var provider in Model.ExternalLogins!)
+                                        {
+                                            <button type="submit" class="btn" name="provider" value="@provider.Name" title="Accedi con il tuo account @provider.DisplayName">
+                                                @* Removed btn-primary for specific external style *@
+                                                <i class="bi bi-google me-2"></i> @* Example Icon - Add logic for different providers *@ @provider.DisplayName
+                                            </button>
+                                        }
+                                    </p>
+                                </div>
+                            </form>
+                        }
+                    }
+                </section>
+            </div>
+        </div> @* End of row *@
+
+    </div> @* End of login-wrapper *@
+</div> @* End of login-container *@
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

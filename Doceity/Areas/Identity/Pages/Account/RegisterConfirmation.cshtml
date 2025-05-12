@@ -1,0 +1,36 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Conferma Registrazione";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@{
+    // In uno scenario reale, potresti voler nascondere questo link
+    // e dire semplicemente all'utente di controllare la propria email.
+    // Ma per lo sviluppo/test può essere utile averlo.
+    // ATTENZIONE: NON MOSTRARE QUESTO LINK IN PRODUZIONE se non hai
+    // misure addizionali contro abusi (es. rate limiting).
+    @*
+    if (Model.DisplayConfirmAccountLink)
+    {
+        <p>
+            Questa app non ha un vero sistema di invio email configurato. <a href="https://aka.ms/aspaccountconf">Vedi questi documenti</a> per come configurarlo.
+            Normalmente questo verrebbe inviato via email: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Clicca qui per confermare il tuo account</a>
+        </p>
+    }
+    else
+    *@
+    {
+        <p class="lead">
+            Registrazione quasi completata! Per favore controlla la tua casella di posta elettronica all'indirizzo <strong>@Model.Email</strong> per trovare l'email di conferma.
+        </p>
+        <p>
+            Clicca sul link contenuto nell'email per attivare il tuo account Doceity.
+        </p>
+        <p class="text-muted small">
+            (Se non vedi l'email entro pochi minuti, controlla la cartella Spam o Posta Indesiderata).
+        </p>
+    }
+}

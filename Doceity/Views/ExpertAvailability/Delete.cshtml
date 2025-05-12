@@ -1,0 +1,54 @@
+﻿@* File: Views/ExpertAvailability/Delete.cshtml *@
+@model Doceity.Models.Availability
+
+@{
+    ViewData["Title"] = "Elimina Disponibilità";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h3 class="text-danger">Sei sicuro di voler eliminare questa fascia di disponibilità?</h3>
+<p class="text-danger">Questa azione non può essere annullata.</p>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">Disponibilità non trovata.</div>
+    <p><a asp-action="Index" class="btn btn-secondary">Torna alla Lista</a></p>
+}
+else
+{
+    <div>
+        <h4>Dettagli Disponibilità</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.AvailableDate)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.AvailableDate.ToString("dddd, dd MMMM yyyy")
+            </dd>
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.StartTime)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.StartTime.ToString(@"hh\:mm")
+            </dd>
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.EndTime)
+            </dt>
+            <dd class="col-sm-8">
+                @Model.EndTime.ToString(@"hh\:mm")
+            </dd>
+            @* Aggiungi altri campi se rilevanti, es. Notes *@
+        </dl>
+        <hr />
+        <form asp-action="Delete" method="post">
+            @* Il metodo POST punterà a DeleteConfirmed grazie a [ActionName("Delete")] *@
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="AvailabilityId" /> @* Passa l'ID della disponibilità da eliminare *@
+            <button type="submit" class="btn btn-danger">Elimina Definitivamente</button> |
+            <a asp-action="Index" class="btn btn-secondary">Annulla e Torna alla Lista</a>
+        </form>
+    </div>
+}

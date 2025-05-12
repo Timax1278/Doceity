@@ -1,0 +1,107 @@
+﻿@* File: Views/CourseManagement/Create.cshtml *@
+@model Doceity.ViewModels.CreateCourseViewModel
+
+@{
+    ViewData["Title"] = "Crea Nuovo Corso";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso sia corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Definisci i dettagli per una nuova sessione di corso programmata.</h4>
+<hr />
+
+@* Mostra messaggi globali dal controller *@
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        @* Layout a colonna singola più ampia per form *@
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken() @* Protezione CSRF *@
+
+            @* Mostra errori di validazione a livello di modello *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="StartDateTime" class="form-label"></label>
+                    @* Usare datetime-local è semplice ma ha supporto/aspetto variabile nei browser *@
+                    <input asp-for="StartDateTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="StartDateTime" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DurationMinutes" class="form-label"></label>
+                    <input asp-for="DurationMinutes" type="number" class="form-control" />
+                    <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <div class="input-group">
+                        <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" />
+                        <span class="input-group-text">€</span>
+                    </div>
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MaxParticipants" class="form-label"></label>
+                    <input asp-for="MaxParticipants" type="number" min="1" class="form-control" />
+                    <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+                </div>
+            </div>
+
+            @* Dropdown Opzionale per Tipo Servizio *@
+            @if (Model.AvailableServiceTypes != null && Model.AvailableServiceTypes.Any())
+            {
+                <div class="mb-3">
+                    <label asp-for="SelectedExpertServiceId" class="form-label"></label>
+                    <select asp-for="SelectedExpertServiceId" asp-items="Model.AvailableServiceTypes" class="form-select">
+                        <option value="">-- Nessuno (Corso Indipendente) --</option>
+                    </select>
+                    <span asp-validation-for="SelectedExpertServiceId" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <input type="hidden" asp-for="SelectedExpertServiceId" value="" /> @* Nasconde se non ci sono servizi *@
+                    <small class="form-text text-muted">Non hai definito 'Tipi di Servizio'. Puoi creare corsi indipendenti o definirne alcuni in "I Miei Servizi".</small>
+                </div>
+            }
+
+            @* Pulsanti di invio e annulla *@
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Crea Corso</button>
+                <a asp-action="Index" class="btn btn-secondary">Annulla</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@* Sezione per gli script di validazione lato client *@
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @* Qui potresti aggiungere script per datepicker/timepicker se necessario *@
+}

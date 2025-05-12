@@ -1,0 +1,62 @@
+﻿@* File: Views/ExpertAvailability/Details.cshtml *@
+@model Doceity.Models.Availability
+
+@{
+    ViewData["Title"] = "Dettaglio Disponibilità";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">Disponibilità non trovata.</div>
+    <p><a asp-action="Index" class="btn btn-secondary">Torna alla Lista</a></p>
+}
+else
+{
+    <div>
+        <h4>Fascia Oraria di Disponibilità</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.AvailabilityId)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.AvailabilityId)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.AvailableDate)
+            </dt>
+            <dd class="col-sm-9">
+                @Model.AvailableDate.ToString("dddd, dd MMMM yyyy")
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.StartTime)
+            </dt>
+            <dd class="col-sm-9">
+                @Model.StartTime.ToString(@"hh\:mm")
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.EndTime)
+            </dt>
+            <dd class="col-sm-9">
+                @Model.EndTime.ToString(@"hh\:mm")
+            </dd>
+            @*
+                // Se avessi un campo Notes:
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Notes)
+                </dt>
+                <dd class="col-sm-9" style="white-space: pre-wrap;">
+                    @(string.IsNullOrWhiteSpace(Model.Notes) ? "Nessuna nota." : Model.Notes)
+                </dd>
+            *@
+        </dl>
+    </div>
+    <hr />
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.AvailabilityId" class="btn btn-primary">Modifica</a> |
+        <a asp-action="Index" class="btn btn-secondary">Torna alla Lista delle Disponibilità</a>
+    </div>
+}

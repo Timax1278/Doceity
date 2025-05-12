@@ -1,0 +1,101 @@
+﻿@* File: Views/CourseManagement/Index.cshtml *@
+@model IEnumerable<Doceity.Models.Course>
+@inject UserManager<ApplicationUser> UserManager // Inietta UserManager per ottenere l'identità dell'esperto
+
+@{
+    ViewData["Title"] = "Gestione Miei Corsi";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso del layout sia corretto
+    var currentUser = await UserManager.GetUserAsync(User); // Ottieni l'utente corrente (l'esperto)
+    var expertUserNameForVideo = currentUser?.UserName ?? "expert_default_identity"; // Usa username o un default
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Da qui puoi gestire tutti i corsi che hai creato.</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Crea Nuovo Corso</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        Non hai ancora creato nessun corso. <a asp-action="Create" class="alert-link">Inizia ora creandone uno!</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive mt-3">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.First().Title)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().StartDateTime) (UTC)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().DurationMinutes)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Price)</th>
+                    <th>Stato Lezione</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Details" asp-controller="PublicCourses" asp-route-id="@item.CourseId" title="Vedi anteprima pubblica">
+                                @Html.DisplayFor(modelItem => item.Title)
+                            </a>
+                        </td>
+                        <td>@item.StartDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@Html.DisplayFor(modelItem => item.DurationMinutes)</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>
+                            @if (item.IsJoinable)
+                            {
+                                <span class="badge bg-danger">LIVE ORA</span>
+                            }
+                            else if (item.StartDateTime > DateTime.UtcNow)
+                            {
+                                <span class="badge bg-info text-dark">Programmato</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Terminato</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Azioni corso">
+                                <a asp-action="Edit" asp-route-id="@item.CourseId" class="btn btn-sm btn-outline-primary" title="Modifica Corso"><i class="bi bi-pencil-square"></i></a>
+                                <a asp-action="Details" asp-controller="PublicCourses" asp-route-id="@item.CourseId" class="btn btn-sm btn-outline-info" title="Anteprima Pubblica"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.CourseId" class="btn btn-sm btn-outline-danger" title="Elimina Corso"><i class="bi bi-trash"></i></a>
+
+                                @* --- PULSANTE ENTRA LIVE PER L'ESPERTO --- *@
+                                @if (item.IsJoinable)
+                                {
+                                    <a asp-controller="Video" asp-action="Room"
+                                       asp-route-roomName="@(string.IsNullOrEmpty(item.VideoMeetingInfo) ? $"corso_{item.CourseId}" : item.VideoMeetingInfo)"
+                                       asp-route-userName="@expertUserNameForVideo"
+                                       class="btn btn-sm btn-success" title="Avvia/Entra Lezione Live">
+                                        <i class="bi bi-camera-video-fill"></i> Entra
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

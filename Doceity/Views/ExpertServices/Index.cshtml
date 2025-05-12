@@ -1,0 +1,84 @@
+﻿@* File: Views/ExpertServices/Index.cshtml *@
+@model IEnumerable<Doceity.Models.ExpertService>
+
+@{
+    ViewData["Title"] = "My Offered Services";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // O il tuo layout principale (es. Pages/Shared/_Layout.cshtml)
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Service</a>
+</p>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstimatedDurationMinutes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsEnabled)
+            </th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price) €
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EstimatedDurationMinutes) min
+                </td>
+                <td>
+                    @if (item.IsEnabled)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ExpertServiceId" class="btn btn-sm btn-outline-primary">Edit</a> |
+                    @*<a asp-action="Details" asp-route-id="@item.ExpertServiceId" class="btn btn-sm btn-outline-info">Details</a> |*@ @* Aggiungi se crei vista Details *@
+                    <a asp-action="Delete" asp-route-id="@item.ExpertServiceId" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center">You haven't defined any services yet.</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,132 @@
+﻿@page
+@model IndexModel
+@using Doceity.Models      // Per ApplicationUser
+@using Doceity.Constants   // Per Roles.Expert, ecc.
+@using Microsoft.AspNetCore.Identity // Per SignInManager, UserManager
+
+@{
+    ViewData["Title"] = "Benvenuto su Doceity";
+    // Non è necessario specificare Layout qui se è già in _ViewStart.cshtml di Pages
+}
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    // Logica per determinare lo stato dell'utente - ancora necessaria per la sezione "Esperto"
+    ApplicationUser? currentUser = null; // Rendi currentUser nullable
+    bool isUserSignedIn = SignInManager.IsSignedIn(User);
+    bool isExpert = false;
+
+    if (isUserSignedIn)
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            isExpert = await UserManager.IsInRoleAsync(currentUser, Roles.Expert);
+        }
+    }
+}
+
+@* SEZIONE SUPERIORE RIMOSSA
+<div class="text-center py-5 bg-light">
+    @* Sostituisci con il percorso del tuo logo effettivo *@
+@* <img src="~/images/doceity_logo_large.png" alt="Doceity Logo" class="mb-4" style="max-height: 120px;" /> *@
+@*    <h1 class="display-4 fw-bold text-primary">Doceity</h1>
+    <p class="lead col-lg-6 mx-auto mb-4">
+        La tua piattaforma per connetterti con esperti qualificati e accedere a corsi formativi live, tutto in un unico posto.
+    </p>
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        @if (!isUserSignedIn)
+        {
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4 gap-3">Registrati Ora</a>
+            <a asp-controller="PublicCourses" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">Esplora i Corsi</a>
+        }
+        else if (currentUser != null) // Assicurati che currentUser non sia null prima di usarlo
+        {
+            // Reindirizza alla dashboard appropriata a seconda del ruolo
+            if (await UserManager.IsInRoleAsync(currentUser, Roles.Admin))
+            {
+                <a asp-controller="AdminSpecializations" asp-action="Index" class="btn btn-danger btn-lg px-4">Dashboard Admin</a>
+            }
+            else if (isExpert && currentUser.IsApprovedExpert)
+            {
+                <a asp-controller="ExpertDashboard" asp-action="Index" class="btn btn-info btn-lg px-4">Dashboard Esperto</a>
+            }
+            else if (isExpert && !currentUser.IsApprovedExpert)
+            {
+                <p class="alert alert-info">Il tuo profilo esperto è in attesa di approvazione.</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">Torna alla Home (Temporanea)</a>
+            }
+            else // Utente Standard
+            {
+                <a asp-controller="UserDashboard" asp-action="Index" class="btn btn-primary btn-lg px-4">Vai alla Mia Dashboard</a>
+            }
+        }
+    </div>
+</div>
+*@
+
+<div class="container px-4 py-5">
+    @* Potresti voler aggiungere un padding-top qui se la pagina inizia troppo attaccata all'header *@
+    <h2 class="pb-2 border-bottom text-center mb-4">Come Funziona Doceity</h2>
+
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+        <div class="col d-flex align-items-start">
+            @* Usa le classi del tema per le icone se vuoi personalizzarle *@
+            <div class="icon-square bg-primary text-white d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 rounded-3 p-2">
+                <i class="bi bi-search"></i>
+            </div>
+            <div>
+                <h4 class="fw-semibold mb-0">1. Trova ciò che Cerchi</h4>
+                @* Usa la classe text-secondary del tema se necessario *@
+                <p class="text-muted">Esplora la nostra vasta gamma di corsi live o cerca l'esperto perfetto per una consulenza individuale.</p>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div class="icon-square bg-primary text-white d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 rounded-3 p-2">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <h4 class="fw-semibold mb-0">2. Iscriviti o Richiedi</h4>
+                <p class="text-muted">Iscriviti ai corsi con un click o invia una richiesta di consulenza, scegliendo tra gli slot disponibili.</p>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div class="icon-square bg-primary text-white d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 rounded-3 p-2">
+                <i class="bi bi-camera-video"></i>
+            </div>
+            <div>
+                <h4 class="fw-semibold mb-0">3. Partecipa Live</h4>
+                <p class="text-muted">Accedi facilmente alle tue sessioni video direttamente dalla piattaforma.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5"> @* Considera di usare un bordo del tema invece di hr standard *@
+
+    <div class="row text-center">
+        <div class="col-lg-6 mx-auto">
+            @* TITOLO RIMOSSO: <h2 class="fw-bold">Sei un Esperto?</h2> *@
+            <p class="lead mb-4">Condividi la tua conoscenza! Su Doceity puoi creare corsi, offrire consulenze e gestire le tue disponibilità.</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                @* Aggiorna le classi dei bottoni per usare lo stile del tema (es. btn-primary, btn-outline-light) *@
+                @if (!isUserSignedIn || (isUserSignedIn && currentUser != null && !await UserManager.IsInRoleAsync(currentUser, Roles.Expert)))
+                {
+                    // Mostra se non loggato o se loggato ma NON è un esperto (né approvato né in attesa)
+                    <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" asp-route-userType="Expert" class="btn btn-primary btn-lg px-4">Diventa un Esperto</a> @* Classe btn-success cambiata in btn-primary per esempio tema *@
+                }
+                else if (isUserSignedIn && currentUser != null && isExpert && !currentUser.IsApprovedExpert)
+                {
+                    @* Stile alert da adattare al tema se necessario *@
+                    <p class="alert alert-info">Il tuo profilo esperto è in attesa di approvazione.</p>
+                }
+                else if (isUserSignedIn && currentUser != null && isExpert && currentUser.IsApprovedExpert)
+                {
+                    @* Classe btn-info cambiata in btn-primary per esempio tema *@
+                    <a asp-controller="ExpertDashboard" asp-action="Index" class="btn btn-primary btn-lg px-4">Vai alla Tua Area Esperto</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

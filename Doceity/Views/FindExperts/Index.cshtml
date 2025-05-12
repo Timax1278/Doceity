@@ -1,0 +1,50 @@
+﻿@* File: Views/FindExperts/Index.cshtml *@
+@model IEnumerable<Doceity.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Trova i Nostri Esperti";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso del layout sia corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Sfoglia l'elenco dei nostri esperti qualificati e richiedi una consulenza.</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="alert">
+        Al momento non ci sono esperti disponibili. Riprova più tardi!
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> @* Layout a card responsive *@
+        @foreach (var expert in Model)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    @* Potresti aggiungere un'immagine dell'esperto qui se l'avessi nel modello *@
+                    @* <img src="..." class="card-img-top" alt="Foto di @expert.FirstName"> *@
+                    <div class="card-body">
+                        <h5 class="card-title">@expert.FirstName @expert.LastName</h5>
+                        <p class="card-text">
+                            <small class="text-muted">Esperto registrato il: @expert.RegistrationDate.ToString("dd/MM/yyyy")</small>
+                        </p>
+                        @* Qui potresti voler mostrare un breve riassunto o le specializzazioni se le avessi *@
+                        @* <p class="card-text">Specializzazioni: Marketing, SEO...</p> *@
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        @* Questo link porterà alla pagina/form per richiedere la consulenza a QUESTO esperto. *@
+                        @* Controller e Azione da creare nel prossimo step (es. ConsultationBooking/CreateRequest) *@
+                        <a asp-controller="ConsultationBooking" asp-action="CreateRequest" asp-route-expertUserId="@expert.Id" class="btn btn-primary btn-sm">
+                            Richiedi Consulenza
+                        </a>
+                        @* Link opzionale alla pagina di dettaglio dell'esperto *@
+                        <a asp-action="Details" asp-route-id="@expert.Id" class="btn btn-outline-secondary btn-sm ms-2">
+                            Vedi Dettagli
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

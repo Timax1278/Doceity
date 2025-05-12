@@ -1,0 +1,66 @@
+﻿@* File: Views/ExpertAvailability/Edit.cshtml *@
+@model Doceity.Models.Availability
+
+@{
+    ViewData["Title"] = "Modifica Disponibilità";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Aggiorna i dettagli per questa fascia oraria di disponibilità.</p>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @* Campo nascosto per l'ID della disponibilità *@
+            <input type="hidden" asp-for="AvailabilityId" />
+            @* Campo nascosto per ExpertUserId - anche se non modificabile dall'utente,
+               è parte del modello inviato e il controller lo userà per verifica/sovrascrittura *@
+            <input type="hidden" asp-for="ExpertUserId" />
+
+
+            <div class="mb-3">
+                <label asp-for="AvailableDate" class="form-label"></label>
+                <input asp-for="AvailableDate" class="form-control" type="date" />
+                <span asp-validation-for="AvailableDate" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="StartTime" class="form-label"></label>
+                    <input asp-for="StartTime" class="form-control" type="time" />
+                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="EndTime" class="form-label"></label>
+                    <input asp-for="EndTime" class="form-control" type="time" />
+                    <span asp-validation-for="EndTime" class="text-danger"></span>
+                </div>
+            </div>
+
+            @* Esempio se avessi un campo Notes nel modello Availability *@
+            @*
+            <div class="mb-3">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+            *@
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Salva Modifiche</button>
+                <a asp-action="Index" class="btn btn-secondary">Annulla</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

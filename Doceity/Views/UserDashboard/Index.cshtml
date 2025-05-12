@@ -1,0 +1,150 @@
+﻿@* File: Views/UserDashboard/Index.cshtml *@
+@model Doceity.ViewModels.UserDashboardViewModel
+@using Doceity.Models // Per gli enum come ConsultationRequestStatus
+
+@{
+    ViewData["Title"] = "La Mia Dashboard";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="lead">Benvenuto nella tua area personale, @User.Identity.Name! Ecco un riepilogo delle tue attività.</p>
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="row">
+    @* Colonna per le Prossime Consulenze *@
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Prossime Consulenze Accettate</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                @if (Model.UpcomingAcceptedConsultations.Any())
+                {
+                    foreach (var req in Model.UpcomingAcceptedConsultations)
+                    {
+                        <a asp-controller="MyConsultations" asp-action="Details" asp-route-id="@req.ConsultationRequestId" class="list-group-item list-group-item-action">
+                            Con <strong>@req.Expert?.FirstName @req.Expert?.LastName</strong>
+                            <br />
+                            <small class="text-muted">
+                                Data: @req.ProposedDateTime.ToLocalTime().ToString("dd/MM/yyyy 'alle' HH:mm")
+                                (@(req.RequestedExpertService?.Title ?? "Consulenza generica"))
+                            </small>
+                        </a>
+                    }
+                    @if (Model.UpcomingAcceptedConsultations.Count >= 5)
+                    {
+                        <a asp-controller="MyConsultations" asp-action="Index" class="list-group-item list-group-item-action text-center text-primary">
+                            Vedi tutte le mie richieste...
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="list-group-item">Nessuna consulenza imminente. <a asp-controller="FindExperts" asp-action="Index">Trova un esperto!</a></div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Colonna per i Prossimi Corsi *@
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-book me-2"></i>Prossimi Corsi Iscritti</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                @if (Model.UpcomingEnrolledCourses.Any())
+                {
+                    foreach (var enrollment in Model.UpcomingEnrolledCourses)
+                    {
+                        <a asp-controller="PublicCourses" asp-action="Details" asp-route-id="@enrollment.CourseId" class="list-group-item list-group-item-action">
+                            <strong>@enrollment.Course?.Title</strong>
+                            <br />
+                            <small class="text-muted">
+                                Con @enrollment.Course?.CreatorExpert?.FirstName @enrollment.Course?.CreatorExpert?.LastName
+                                - Inizio: @enrollment.Course?.StartDateTime.ToLocalTime().ToString("dd/MM/yyyy 'alle' HH:mm")
+                            </small>
+                        </a>
+                    }
+                    @if (Model.UpcomingEnrolledCourses.Count >= 5)
+                    {
+                        <a asp-controller="CourseEnrollment" asp-action="MyEnrolledCourses" class="list-group-item list-group-item-action text-center text-primary">
+                            Vedi tutti i miei corsi iscritti...
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="list-group-item">Nessun corso imminente a cui sei iscritto. <a asp-controller="PublicCourses" asp-action="Index">Esplora i corsi!</a></div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    @* Colonna per le Ultime Richieste Inviate *@
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-envelope-paper me-2"></i>Ultime Richieste di Consulenza Inviate</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                @if (Model.RecentConsultationRequests.Any())
+                {
+                    foreach (var req in Model.RecentConsultationRequests)
+                    {
+                        <a asp-controller="MyConsultations" asp-action="Details" asp-route-id="@req.ConsultationRequestId" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                Richiesta a <strong>@req.Expert?.FirstName @req.Expert?.LastName</strong>
+                                <br />
+                                <small class="text-muted">
+                                    Inviata: @req.RequestTimestamp.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    - Proposta per: @req.ProposedDateTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </div>
+                            <span class="badge @GetStatusBadgeClass(req.Status) rounded-pill">
+                                @Html.DisplayFor(modelItem => req.Status)
+                            </span>
+                        </a>
+                    }
+                    @if (Model.RecentConsultationRequests.Count >= 5)
+                    {
+                        <a asp-controller="MyConsultations" asp-action="Index" class="list-group-item list-group-item-action text-center text-primary">
+                            Vedi tutte le mie richieste...
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="list-group-item">Non hai ancora inviato richieste.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    // Helper per ottenere classe CSS per il badge di stato (copiato)
+    string GetStatusBadgeClass(ConsultationRequestStatus status)
+    {
+        return status switch
+        {
+            ConsultationRequestStatus.Pending => "bg-warning text-dark",
+            ConsultationRequestStatus.Accepted => "bg-success",
+            ConsultationRequestStatus.Rejected => "bg-danger",
+            ConsultationRequestStatus.Cancelled => "bg-secondary",
+            _ => "bg-light text-dark",
+        };
+    }
+}

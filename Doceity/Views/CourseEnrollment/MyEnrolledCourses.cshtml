@@ -1,0 +1,105 @@
+﻿@* File: Views/CourseEnrollment/MyEnrolledCourses.cshtml *@
+@model IEnumerable<Doceity.Models.CourseEnrollment>
+@using Doceity.Models // Per l'enum EnrollmentStatus
+@inject UserManager<ApplicationUser> UserManager // Inietta UserManager
+
+@{
+    ViewData["Title"] = "I Miei Corsi Iscritti";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+    var currentUser = await UserManager.GetUserAsync(User); // Ottieni l'utente corrente
+    var studentUserNameForVideo = currentUser?.UserName ?? "student_default_identity";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Non sei ancora iscritto a nessun corso.
+        <a asp-controller="PublicCourses" asp-action="Index" class="alert-link">Esplora i corsi disponibili!</a>
+    </div>
+}
+else
+{
+    <p>Qui puoi vedere i corsi a cui ti sei iscritto.</p>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Titolo Corso</th>
+                    <th>Esperto</th>
+                    <th>Data Inizio Corso (UTC)</th>
+                    <th>Stato Iscrizione</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var enrollment in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (enrollment.Course != null)
+                            {
+                                <a asp-controller="PublicCourses" asp-action="Details" asp-route-id="@enrollment.CourseId">
+                                    @enrollment.Course.Title
+                                </a>
+                            }
+                            else
+                            {
+                                @:N/D
+                            }
+                        </td>
+                        <td>
+                            @if (enrollment.Course?.CreatorExpert != null)
+                            {
+                                @(enrollment.Course.CreatorExpert.FirstName) @(enrollment.Course.CreatorExpert.LastName)
+                            }
+                            else
+                            {
+                                @:N/D
+                            }
+                        </td>
+                        <td>@(enrollment.Course?.StartDateTime.ToString("dd/MM/yyyy HH:mm") ?? "N/D")</td>
+                        <td>
+                            <span class="badge @(enrollment.Status == EnrollmentStatus.Enrolled ? "bg-success" : "bg-warning text-dark")">
+                                @Html.DisplayFor(modelItem => enrollment.Status)
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-controller="PublicCourses" asp-action="Details" asp-route-id="@enrollment.CourseId" class="btn btn-sm btn-info">
+                                Vedi Dettagli
+                            </a>
+                            @* --- PULSANTE ENTRA LEZIONE PER UTENTE ISCRITTO --- *@
+                            @if (enrollment.Course != null && enrollment.Course.IsJoinable && enrollment.Status == EnrollmentStatus.Enrolled)
+                            {
+                                <a asp-controller="Video" asp-action="Room"
+                                   asp-route-roomName="@(string.IsNullOrEmpty(enrollment.Course.VideoMeetingInfo) ? $"corso_{enrollment.CourseId}" : enrollment.Course.VideoMeetingInfo)"
+                                   asp-route-userName="@studentUserNameForVideo"
+                                   class="btn btn-sm btn-success ms-1">
+                                    <i class="bi bi-camera-video-fill"></i> Entra Lezione
+                                </a>
+                            }
+                            else if (enrollment.Course != null && enrollment.Course.StartDateTime > DateTime.UtcNow)
+                            {
+                                <span class="ms-1 text-muted small">(Inizia il @enrollment.Course.StartDateTime.ToLocalTime().ToString("dd/MM HH:mm"))</span>
+                            }
+                            else if (enrollment.Course != null)
+                            {
+                                <span class="ms-1 text-muted small">(Lezione non attiva)</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

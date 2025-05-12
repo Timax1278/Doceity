@@ -1,0 +1,355 @@
+﻿@* File: Views/Video/Room.cshtml *@
+@{
+    ViewData["Title"] = "Video Call Room";
+    // Layout = null; // Scommenta se vuoi un layout minimale o nessun layout per la videochiamata
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati che il percorso del tuo layout principale sia corretto
+}
+
+<style>
+    /* Stili base per i contenitori video */
+    #local-media-div {
+        width: 100%; /* Fai in modo che prenda la larghezza del suo contenitore col-md-4 */
+        max-width: 320px; /* Limita la larghezza massima */
+        aspect-ratio: 4 / 3; /* Per mantenere le proporzioni, es. 4:3 */
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        background-color: #f0f0f0;
+        position: relative; /* Per posizionare il video all'interno */
+    }
+
+    #remote-media-div .remote-participant-container .remote-video-wrapper {
+        width: 100%;
+        max-width: 320px; /* Dimensione per i video remoti, puoi aggiustarla */
+        aspect-ratio: 4 / 3;
+        border: 1px solid #ddd;
+        background-color: #e0e0e0;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* 'cover' riempie, 'contain' mostra tutto */
+        display: block; /* Rimuove spazi extra sotto il video */
+    }
+
+    #remote-media-div {
+        /* Per disporre i video remoti in una griglia flessibile */
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+</style>
+
+<div class="container mt-3">
+    <h2 id="room-name-display">Stanza Video: ...</h2>
+    <p id="identity-display" class="text-muted">La tua Identità: ...</p>
+
+    <div class="alert alert-info" id="connection-status" role="alert">
+        Pronto per connettersi.
+    </div>
+
+    <div class="mb-3">
+        <button id="button-join-leave" class="btn btn-primary"><i class="bi bi-camera-video-fill me-1"></i> Entra nella Stanza</button>
+        <button id="button-mute-unmute" class="btn btn-outline-secondary" disabled><i class="bi bi-mic-mute-fill me-1"></i> Mute Audio</button>
+        <button id="button-stop-start-video" class="btn btn-outline-secondary" disabled><i class="bi bi-camera-video-off-fill me-1"></i> Stop Video</button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Il Tuo Video (Locale)</h5>
+            <div id="local-media-div">
+                <small class="text-muted p-2">La tua webcam apparirà qui.</small>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h5>Video Partecipanti Remoti</h5>
+            <div id="remote-media-div">
+                <small class="text-muted p-2">I video degli altri partecipanti appariranno qui.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@* Includi l'SDK JavaScript di Twilio Video - Controlla il sito Twilio per l'ultima versione stabile *@
+<script src="//sdk.twilio.com/js/video/releases/2.28.1/twilio-video.min.js"></script>
+
+@* Includi il token AntiForgery per la chiamata AJAX POST al tuo backend *@
+@Html.AntiForgeryToken()
+
+<script>
+    // Elementi UI
+    const joinLeaveButton = document.getElementById('button-join-leave');
+    const muteUnmuteButton = document.getElementById('button-mute-unmute');
+    const stopStartVideoButton = document.getElementById('button-stop-start-video');
+    const localMediaContainer = document.getElementById('local-media-div');
+    const remoteMediaContainer = document.getElementById('remote-media-div');
+    const roomNameDisplay = document.getElementById('room-name-display');
+    const identityDisplay = document.getElementById('identity-display');
+    const connectionStatus = document.getElementById('connection-status');
+
+    // Variabili di stato della chiamata
+    let currentRoom = null;
+    let localAudioTrack = null;
+    let localVideoTrack = null;
+    let isAudioMuted = false;
+    let isVideoStopped = false;
+
+    // --- LEGGI RoomName e UserIdentity da ViewData (passati dal Controller) ---
+    // e per assicurare che le virgolette singole/doppie nel valore non rompano lo script.
+    const roomNameFromView = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(ViewData["RoomName"]?.ToString() ?? ""))';
+    const userIdentityFromView = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(ViewData["UserIdentity"]?.ToString() ?? ""))';
+
+    // Usa i valori dalla vista, o dei fallback se non sono stati passati (utile per test diretti della pagina)
+    let activeRoomName = roomNameFromView || "DefaultTestRoom_" + Math.random().toString(36).substring(2,7);
+    let activeUserIdentity = userIdentityFromView || "User_" + Math.random().toString(36).substring(2,7);
+    // --- FINE LETTURA DA ViewData ---
+
+    // Aggiorna la UI con i nomi attivi
+    roomNameDisplay.textContent = `Stanza Video: ${activeRoomName}`;
+    identityDisplay.textContent = `La tua Identità: ${activeUserIdentity}`;
+
+
+    // Funzione per ottenere il token di accesso dal backend
+    async function getToken(identity, roomName) {
+        console.log(`Richiesta token per identità: ${identity}, stanza: ${roomName}`);
+        const antiForgeryTokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (!antiForgeryTokenInput) {
+            console.error("Token AntiForgery non trovato nel DOM!");
+            connectionStatus.textContent = "Errore di configurazione: AntiForgeryToken mancante.";
+            connectionStatus.className = 'alert alert-danger';
+            return null;
+        }
+        const antiForgeryToken = antiForgeryTokenInput.value;
+
+        try {
+            const response = await fetch('/Video/GenerateToken', { // Assicurati che il percorso del controller sia corretto
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': antiForgeryToken
+                },
+                body: JSON.stringify({ identity: identity, roomName: roomName })
+            });
+
+            if (!response.ok) {
+                let errorText = `Errore dal server: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    console.error('Errore nella richiesta del token:', response.status, errorData);
+                    errorText += ` - ${JSON.stringify(errorData.errors || errorData.title || errorData)}`;
+                } catch (e) {
+                    // Se il corpo non è JSON o è vuoto
+                    errorText += ` - ${await response.text()}`;
+                }
+                throw new Error(errorText);
+            }
+            const data = await response.json();
+            console.log('Token ricevuto con successo:', data.token);
+            return data.token;
+        } catch (error) {
+            console.error('Errore fatale nel fetch del token:', error);
+            connectionStatus.textContent = `Errore nel recupero del token: ${error.message}`;
+            connectionStatus.className = 'alert alert-danger';
+            throw error;
+        }
+    }
+
+    // Funzione per connettersi alla stanza video
+    async function connectToRoom(token, roomName) {
+        try {
+            console.log(`Tentativo di connessione alla stanza: ${roomName}`);
+            connectionStatus.textContent = `Connessione a ${roomName}...`;
+            connectionStatus.className = 'alert alert-info';
+
+            // Crea tracce audio e video locali
+            // Potresti voler gestire errori qui se l'utente nega i permessi
+            const localTracks = await Twilio.Video.createLocalTracks({
+                audio: true,
+                video: { width: 320, height: 240, frameRate: 15 } // Puoi specificare risoluzione e frame rate
+            });
+
+            localAudioTrack = localTracks.find(track => track.kind === 'audio');
+            localVideoTrack = localTracks.find(track => track.kind === 'video');
+
+            // Mostra il video locale
+            localMediaContainer.innerHTML = ''; // Pulisci il contenitore da messaggi precedenti
+            if (localVideoTrack) {
+                localMediaContainer.appendChild(localVideoTrack.attach());
+            } else {
+                localMediaContainer.innerHTML = '<small class="text-danger p-2">Webcam non trovata o accesso negato.</small>';
+            }
+             if (!localAudioTrack) {
+                 console.warn("Traccia audio locale non creata o accesso negato.");
+                 // Potresti mostrare un avviso all'utente
+             }
+
+
+            currentRoom = await Twilio.Video.connect(token, {
+                name: roomName,
+                tracks: localTracks,
+                logLevel: 'debug' // 'info', 'warn', 'error', 'debug', 'trace'
+            });
+
+            console.log(`Connesso con successo alla stanza: ${currentRoom.name} (SID: ${currentRoom.sid})`);
+            connectionStatus.textContent = `Connesso a: ${currentRoom.name}`;
+            connectionStatus.className = 'alert alert-success';
+            joinLeaveButton.textContent = 'Esci dalla Stanza';
+            joinLeaveButton.classList.remove('btn-primary');
+            joinLeaveButton.classList.add('btn-danger');
+            muteUnmuteButton.disabled = !localAudioTrack; // Abilita solo se c'è traccia audio
+            stopStartVideoButton.disabled = !localVideoTrack; // Abilita solo se c'è traccia video
+
+            // Gestisci i partecipanti già presenti
+            currentRoom.participants.forEach(participantConnected);
+
+            // Ascolta eventi per nuovi partecipanti
+            currentRoom.on('participantConnected', participantConnected);
+            currentRoom.on('participantDisconnected', participantDisconnected);
+
+            // Pulisci quando la pagina viene chiusa o si naviga via
+            window.addEventListener('pagehide', () => { // 'pagehide' è più affidabile di 'beforeunload' per disconnessione
+                if (currentRoom) {
+                    currentRoom.disconnect();
+                    currentRoom = null;
+                }
+            });
+
+        } catch (error) {
+            console.error(`Impossibile connettersi alla stanza: ${error.message}`, error);
+            connectionStatus.textContent = `Errore di connessione: ${error.message}`;
+            connectionStatus.className = 'alert alert-danger';
+            if (currentRoom) { // Assicurati di disconnettere se la connessione è parzialmente avvenuta
+                currentRoom.disconnect();
+                currentRoom = null;
+            }
+            // Rilascia le tracce locali se create ma la connessione è fallita
+            localTracksCleanup();
+        }
+    }
+
+    function localTracksCleanup() {
+        if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack = null; }
+        if (localVideoTrack) { localVideoTrack.stop(); localVideoTrack = null; }
+        localMediaContainer.innerHTML = '<small class="text-muted p-2">La tua webcam apparirà qui.</small>'; // Ripristina messaggio
+    }
+
+    // Funzione per gestire la connessione di un nuovo partecipante
+    function participantConnected(participant) {
+        console.log(`Partecipante "${participant.identity}" connesso alla stanza.`);
+        connectionStatus.textContent = `Partecipante "${participant.identity}" è entrato.`;
+
+        const participantContainerId = `participant-${participant.sid}`;
+        let participantDiv = document.getElementById(participantContainerId);
+        if (!participantDiv) {
+            participantDiv = document.createElement('div');
+            participantDiv.setAttribute('id', participantContainerId);
+            participantDiv.classList.add('remote-participant-container', 'mb-2');
+            participantDiv.innerHTML = `<h6 class="text-center small">${participant.identity}</h6><div class="remote-video-wrapper"></div>`;
+
+            // Pulisci il messaggio "I video degli altri partecipanti..." se è la prima connessione remota
+            if (remoteMediaContainer.querySelector('small')) {
+                remoteMediaContainer.innerHTML = '';
+            }
+            remoteMediaContainer.appendChild(participantDiv);
+        }
+
+        const videoWrapper = participantDiv.querySelector('.remote-video-wrapper');
+
+        participant.on('trackSubscribed', track => {
+            console.log(`Sottoscritta traccia [${track.kind}] dal partecipante ${participant.identity}`);
+            videoWrapper.appendChild(track.attach());
+        });
+
+        participant.on('trackUnsubscribed', track => {
+            console.log(`Annullata sottoscrizione traccia [${track.kind}] dal partecipante ${participant.identity}`);
+            track.detach().forEach(element => element.remove());
+        });
+    }
+
+    // Funzione per gestire la disconnessione di un partecipante
+    function participantDisconnected(participant) {
+        console.log(`Partecipante "${participant.identity}" disconnesso.`);
+        connectionStatus.textContent = `Partecipante "${participant.identity}" è uscito.`;
+        const participantDiv = document.getElementById(`participant-${participant.sid}`);
+        if (participantDiv) {
+            participantDiv.remove();
+        }
+        if (remoteMediaContainer.childElementCount === 0) {
+            remoteMediaContainer.innerHTML = '<small class="text-muted p-2">I video degli altri partecipanti appariranno qui.</small>';
+        }
+    }
+
+    // Gestore per il pulsante Entra/Esci
+    joinLeaveButton.onclick = async () => {
+        joinLeaveButton.disabled = true; // Disabilita durante l'operazione
+        if (currentRoom) {
+            currentRoom.disconnect(); // L'evento 'disconnected' della stanza non viene gestito qui, ma da 'pagehide'
+            currentRoom = null;
+            console.log('Disconnesso manualmente dalla stanza.');
+            connectionStatus.textContent = 'Disconnesso. Puoi rientrare o chiudere la pagina.';
+            connectionStatus.className = 'alert alert-secondary';
+            joinLeaveButton.textContent = 'Entra nella Stanza';
+            joinLeaveButton.classList.remove('btn-danger');
+            joinLeaveButton.classList.add('btn-primary');
+            muteUnmuteButton.disabled = true;
+            stopStartVideoButton.disabled = true;
+            localTracksCleanup();
+            remoteMediaContainer.innerHTML = '<small class="text-muted p-2">I video degli altri partecipanti appariranno qui.</small>';
+        } else {
+            try {
+                const token = await getToken(activeUserIdentity, activeRoomName);
+                if (token) {
+                    await connectToRoom(token, activeRoomName);
+                } else {
+                    // Se getToken ritorna null a causa di un errore gestito, non procedere
+                    console.log("getToken ha fallito, non si tenta la connessione.");
+                }
+            } catch (error) {
+                // L'errore è già loggato e mostrato da getToken o connectToRoom
+                console.error("Fallimento nel processo di join alla stanza (blocco catch principale):", error);
+            }
+        }
+        joinLeaveButton.disabled = false; // Riabilita
+    };
+
+    // Gestore Mute/Unmute Audio
+    muteUnmuteButton.onclick = () => {
+        if (!currentRoom || !localAudioTrack) return;
+        if (isAudioMuted) {
+            localAudioTrack.enable();
+            muteUnmuteButton.innerHTML = '<i class="bi bi-mic-mute-fill me-1"></i> Mute Audio';
+            console.log('Audio Riattivato.');
+        } else {
+            localAudioTrack.disable();
+            muteUnmuteButton.innerHTML = '<i class="bi bi-mic-fill me-1"></i> Unmute Audio';
+            console.log('Audio Disattivato (Mute).');
+        }
+        isAudioMuted = !isAudioMuted;
+    };
+
+    // Gestore Stop/Start Video
+    stopStartVideoButton.onclick = () => {
+        if (!currentRoom || !localVideoTrack) return;
+        if (isVideoStopped) {
+            localVideoTrack.enable();
+            stopStartVideoButton.innerHTML = '<i class="bi bi-camera-video-off-fill me-1"></i> Stop Video';
+            // Assicurati che il video sia riattaccato se è stato staccato
+             if (localVideoTrack.element && !localMediaContainer.contains(localVideoTrack.element)) {
+                localMediaContainer.appendChild(localVideoTrack.attach());
+            }
+            console.log('Video Riattivato.');
+        } else {
+            localVideoTrack.disable();
+            stopStartVideoButton.innerHTML = '<i class="bi bi-camera-video-fill me-1"></i> Start Video';
+            // Opzionale: stacca l'elemento video per nasconderlo
+            // localVideoTrack.detach().forEach(el => el.remove());
+            // localMediaContainer.innerHTML = '<small class="text-muted p-2">Video locale disattivato.</small>';
+            console.log('Video Stoppato.');
+        }
+        isVideoStopped = !isVideoStopped;
+    };
+
+</script>

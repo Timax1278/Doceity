@@ -1,0 +1,58 @@
+﻿@* File: Views/ExpertAvailability/Index.cshtml *@
+@model IEnumerable<Doceity.Models.Availability>
+
+@{
+    ViewData["Title"] = "Le Mie Disponibilità";
+    Layout = "~/Pages/Shared/_Layout.cshtml"; // Assicurati percorso corretto
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Gestisci le date e gli orari in cui sei disponibile per consulenze o corsi.</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-calendar-plus"></i> Aggiungi Nuova Disponibilità</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Non hai ancora impostato nessuna disponibilità. <a asp-action="Create" class="alert-link">Aggiungine una ora!</a>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.First().AvailableDate)</th>
+                <th>@Html.DisplayNameFor(model => model.First().StartTime)</th>
+                <th>@Html.DisplayNameFor(model => model.First().EndTime)</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.AvailableDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.StartTime.ToString(@"hh\:mm")</td>
+                    <td>@item.EndTime.ToString(@"hh\:mm")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.AvailabilityId" class="btn btn-sm btn-outline-primary">Modifica</a> |
+                        <a asp-action="Details" asp-route-id="@item.AvailabilityId" class="btn btn-sm btn-outline-info">Dettagli</a> | @* L'azione Details è opzionale qui *@
+                        <a asp-action="Delete" asp-route-id="@item.AvailabilityId" class="btn btn-sm btn-outline-danger">Elimina</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

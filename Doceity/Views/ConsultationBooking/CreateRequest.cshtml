@@ -1,0 +1,122 @@
+﻿@* File: Views/ConsultationBooking/CreateRequest.cshtml *@
+@model Doceity.ViewModels.CreateConsultationRequestViewModel
+@using System.Globalization // Per formattare le date come "dddd, dd MMMM yyyy"
+
+@{
+    ViewData["Title"] = "Richiedi Consulenza";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <section>
+            <h4>Stai inviando una richiesta a: <strong>@Model.ExpertFullName</strong></h4>
+            @if (!string.IsNullOrEmpty(Model.ExpertServiceTitle))
+            {
+                <p>Per il servizio: <strong>@Model.ExpertServiceTitle</strong></p>
+            }
+            <hr />
+
+            <form asp-action="CreateRequest" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">@TempData["ErrorMessage"]</div>
+                }
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning" role="alert">@TempData["WarningMessage"]</div>
+                }
+
+                <input type="hidden" asp-for="ExpertUserId" />
+                <input type="hidden" asp-for="RequestedExpertServiceId" />
+                <input type="hidden" asp-for="ExpertFullName" />
+                <input type="hidden" asp-for="ExpertServiceTitle" />
+
+                <div class="mb-3">
+                    <label asp-for="SelectedSlot" class="form-label fw-bold"></label>
+                    @if (Model.ExpertAvailabilities != null && Model.ExpertAvailabilities.Any())
+                    {
+                        <p class="form-text text-muted">Seleziona uno slot disponibile dall'esperto (orari in UTC):</p>
+                        <div class="list-group mb-3 border rounded" style="max-height: 300px; overflow-y: auto;">
+                            @foreach (var dateGroup in Model.ExpertAvailabilities.GroupBy(a => a.AvailableDate.Date).OrderBy(g => g.Key))
+                            {
+                                <h6 class="mt-2 mb-1 sticky-top bg-light p-2 border-bottom rounded-top">
+                                    @dateGroup.Key.ToString("dddd, dd MMMM yyyy", new CultureInfo("it-IT"))
+                                </h6>
+                                foreach (var availability in dateGroup.OrderBy(a => a.StartTime))
+                                {
+                                    var startTime = availability.StartTime;
+                                    var endTime = availability.EndTime;
+                                    var availableDateTimeUtc = dateGroup.Key.Add(startTime);
+
+                                    if (availableDateTimeUtc > DateTime.UtcNow.AddMinutes(15))
+                                    {
+                                        if (availability.IsBooked)
+                                        {
+                                            <label class="list-group-item list-group-item-action py-2 disabled text-muted text-decoration-line-through">
+                                                <input type="radio" name="SelectedSlot" id="slot_booked_@(availability.AvailabilityId)_@availableDateTimeUtc.Ticks"
+                                                       value="@($"{availability.AvailabilityId}|{availableDateTimeUtc.ToString("o")}")" class="form-check-input me-2" disabled />
+                                                Dalle <strong>@startTime.ToString(@"hh\:mm")</strong> alle <strong>@endTime.ToString(@"hh\:mm")</strong> (UTC) - <i>Non disponibile</i>
+                                            </label>
+                                        }
+                                        else
+                                        {
+                                            <label class="list-group-item list-group-item-action py-2">
+                                                @* --- MODIFICA QUI --- *@
+                                                <input type="radio" name="SelectedSlot" id="slot_@(availability.AvailabilityId)_@availableDateTimeUtc.Ticks"
+                                                       value="@($"{availability.AvailabilityId}|{availableDateTimeUtc.ToString("o")}")"
+                                                       class="form-check-input me-2" required />
+                                                Dalle <strong>@startTime.ToString(@"hh\:mm")</strong> alle <strong>@endTime.ToString(@"hh\:mm")</strong> (UTC)
+                                            </label>
+                                        }
+                                    }
+                                }
+                            }
+                        </div>
+                        <span asp-validation-for="SelectedSlot" class="text-danger"></span>
+                    }
+                    else
+                    {
+                        <p class="text-warning">L'esperto non ha ancora specificato le sue disponibilità per date future.</p>
+                        <p class="form-text text-muted mt-2">Non ci sono slot predefiniti, per favore inserisci la tua data/ora proposta:</p>
+                        <input asp-for="SelectedSlot" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="SelectedSlot" class="text-danger"></span>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="UserMessage" class="form-label"></label>
+                    <textarea asp-for="UserMessage" class="form-control" rows="5" placeholder="Aggiungi dettagli o domande specifiche per l'esperto..."></textarea>
+                    <span asp-validation-for="UserMessage" class="text-danger"></span>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Invia Richiesta</button>
+                    <a asp-controller="FindExperts" asp-action="Index" class="btn btn-secondary">Annulla</a>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-md-4">
+        <section>
+            <h5>Consigli per la Richiesta</h5>
+            <p class="small">
+                - Sii specifico nel tuo messaggio per aiutare l'esperto a prepararsi.
+                - Se scegli da uno slot, l'orario è indicato in UTC.
+                - Se inserisci manualmente una data/ora, verrà interpretata nel tuo fuso orario locale e poi convertita.
+                - Riceverai una notifica quando l'esperto risponderà alla tua richiesta.
+            </p>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

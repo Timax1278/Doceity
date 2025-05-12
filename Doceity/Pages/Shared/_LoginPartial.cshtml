@@ -1,0 +1,175 @@
+﻿@* File: Views/Shared/_LoginPartial.cshtml o Pages/Shared/_LoginPartial.cshtml *@
+@using Microsoft.AspNetCore.Identity
+@using Doceity.Models          @* Assicurati Namespace corretto per ApplicationUser *@
+@using Doceity.Constants       @* Assicurati Namespace corretto per Roles *@
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    // Variabili per memorizzare lo stato dell'utente e i ruoli
+    ApplicationUser currentUser = null;
+    bool isUserSignedIn = SignInManager.IsSignedIn(User);
+    bool isExpert = false;
+    bool isApprovedExpert = false;
+    bool isAdmin = false;
+    bool isStandardUser = false;
+
+    // Ottieni i dettagli dell'utente e i ruoli se è loggato
+    if (isUserSignedIn)
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            isExpert = await UserManager.IsInRoleAsync(currentUser, Roles.Expert);
+            isAdmin = await UserManager.IsInRoleAsync(currentUser, Roles.Admin);
+            isApprovedExpert = isExpert && currentUser.IsApprovedExpert; // Assumendo che ApplicationUser abbia IsApprovedExpert
+            isStandardUser = !isExpert && !isAdmin;
+        }
+    }
+
+    Func<string, string, bool> IsActivePage = (controller, action) =>
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        return string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+    };
+
+    Func<string, bool> IsActiveAreaPage = (pagePath) =>
+    {
+        var currentPage = ViewContext.RouteData.Values["page"]?.ToString();
+        return string.Equals(currentPage, pagePath, StringComparison.OrdinalIgnoreCase);
+    };
+}
+
+<ul class="navbar-nav">
+    @* Link "Corsi" visibile a TUTTI (anche non loggati), se non già presente nel _Layout.cshtml principale *@
+    @if (!isUserSignedIn)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark @(IsActivePage("PublicCourses", "Index") ? "active" : "")"
+               asp-controller="PublicCourses" asp-action="Index">Corsi</a>
+        </li>
+    }
+
+    @if (isUserSignedIn && currentUser != null)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                @currentUser.FirstName @* Assumendo che ApplicationUser abbia FirstName *@
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+                <li><h6 class="dropdown-header">Account (@currentUser.Email)</h6></li>
+                <li>
+                    <a class="dropdown-item @(IsActiveAreaPage("/Account/Manage/Index") ? "active" : "")"
+                       asp-area="Identity" asp-page="/Account/Manage/Index">Gestisci Account</a>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item @(IsActivePage("PublicCourses", "Index") ? "active" : "")"
+                       asp-controller="PublicCourses" asp-action="Index">Catalogo Corsi</a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(IsActivePage("FindExperts", "Index") ? "active" : "")"
+                       asp-controller="FindExperts" asp-action="Index">Trova Esperti</a>
+                </li>
+
+                @if (isStandardUser)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">La Mia Area</h6></li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("UserDashboard", "Index") ? "active" : "")"
+                           asp-controller="UserDashboard" asp-action="Index">La Mia Dashboard</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("MyConsultations", "Index") ? "active" : "")"
+                           asp-controller="MyConsultations" asp-action="Index">Le Mie Richieste Consulenza</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("CourseEnrollment", "MyEnrolledCourses") ? "active" : "")"
+                           asp-controller="CourseEnrollment" asp-action="MyEnrolledCourses">I Miei Corsi Iscritti</a>
+                    </li>
+                }
+
+                @if (isApprovedExpert)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Area Esperto</h6></li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("ExpertDashboard", "Index") ? "active" : "")"
+                           asp-controller="ExpertDashboard" asp-action="Index">Mio Calendario/Dashboard</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("ExpertServices", "Index") ? "active" : "")"
+                           asp-controller="ExpertServices" asp-action="Index">I Miei Servizi</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("ConsultationRequests", "Index") ? "active" : "")"
+                           asp-controller="ConsultationRequests" asp-action="Index">Richieste Consulenza Ricevute</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("ExpertAvailability", "Index") ? "active" : "")"
+                           asp-controller="ExpertAvailability" asp-action="Index">Mie Disponibilità</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("CourseManagement", "Index") ? "active" : "")"
+                           asp-controller="CourseManagement" asp-action="Index">Gestione Miei Corsi</a>
+                    </li>
+                    <li>
+                        @* LINK PER L'ESPERTO *@
+                        <a class="dropdown-item @(IsActivePage("ExpertProfile", "ManageSpecializations") ? "active" : "")"
+                           asp-controller="ExpertProfile" asp-action="ManageSpecializations">Gestisci Mie Specializzazioni</a>
+                    </li>
+                }
+
+                @if (isExpert && !isApprovedExpert)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <span class="dropdown-item-text text-warning"><i class="bi bi-hourglass-split me-1"></i>Esperto (In Approvazione)</span>
+                    </li>
+                }
+
+                @if (isAdmin)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Admin</h6></li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("Admin", "UserManagement") ? "active" : "")"
+                           asp-controller="Admin" asp-action="UserManagement">Gestione Utenti</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item @(IsActivePage("Admin", "ApproveExperts") ? "active" : "")"
+                           asp-controller="Admin" asp-action="ApproveExperts">Approva Esperti</a>
+                    </li>
+                    <li>
+                        @* LINK PER L'ADMIN *@
+                        <a class="dropdown-item @(IsActivePage("AdminSpecializations", "Index") ? "active" : "")"
+                           asp-controller="AdminSpecializations" asp-action="Index">Gestisci Specializzazioni</a>
+                    </li>
+                }
+
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form id="logoutForm" class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                        <button id="logout" type="submit" class="dropdown-item btn btn-link text-danger border-0">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else // Mostra se l'utente NON è loggato
+    {
+        <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm me-2" id="register" asp-area="Identity" asp-page="/Account/Register">Registrati</a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-primary btn-sm" id="login" asp-area="Identity" asp-page="/Account/Login">Accedi</a>
+        </li>
+    }
+</ul>
